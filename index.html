@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATA Carnet Billing — Film Logic</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --bg2: #1a1a1a;
+    --bg3: #232323;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0ede8;
+    --text2: #9e9b95;
+    --text3: #5c5a56;
+    --accent: #d4a843;
+    --accent2: #b8912f;
+    --green: #2d7a4f;
+    --green-bg: #0d2418;
+    --green-text: #4db87a;
+    --red-bg: #2a0d0d;
+    --red-text: #e05555;
+    --info-bg: #0d1f2e;
+    --info-text: #4a9fd4;
+    --warn-bg: #2a1f0a;
+    --warn-text: #d4a843;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 14px; line-height: 1.6; min-height: 100vh; }
+  a { color: var(--accent); }
+
+  /* Layout */
+  .app { max-width: 760px; margin: 0 auto; padding: 0 20px 60px; }
+  .header { display: flex; align-items: center; gap: 14px; padding: 28px 0 24px; border-bottom: 0.5px solid var(--border); margin-bottom: 28px; }
+  .header-icon { width: 38px; height: 38px; background: rgba(212,168,67,0.12); border: 0.5px solid rgba(212,168,67,0.3); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .header-icon svg { width: 20px; height: 20px; stroke: var(--accent); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .header-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; color: var(--text); }
+  .header-sub { font-size: 12px; color: var(--text3); margin-top: 2px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; border-bottom: 0.5px solid var(--border); margin-bottom: 24px; }
+  .tab { padding: 9px 20px; font-size: 13px; font-weight: 500; background: none; border: none; color: var(--text3); border-bottom: 2px solid transparent; cursor: pointer; transition: color 0.15s; margin-bottom: -0.5px; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover:not(.active) { color: var(--text2); }
+
+  /* Cards */
+  .card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 12px; }
+  .card-sm { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 10px; }
+
+  /* Form */
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+  .field label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; }
+  .field input, .field select, .field textarea { background: var(--bg3); border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 8px 10px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.15s; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .field input::placeholder, .field textarea::placeholder { color: var(--text3); }
+  .field select option { background: var(--bg3); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .divider { height: 0.5px; background: var(--border); margin: 16px 0; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2); cursor: pointer; padding: 5px 0; }
+  .checkbox-row input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--accent); }
+  .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+
+  /* Buttons */
+  .btn { padding: 8px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 0.5px solid var(--border2); background: transparent; color: var(--text2); transition: all 0.15s; font-family: inherit; }
+  .btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+  .btn-primary { background: rgba(212,168,67,0.12); border-color: rgba(212,168,67,0.4); color: var(--accent); }
+  .btn-primary:hover { background: rgba(212,168,67,0.2); }
+  .btn-green { background: var(--green-bg); border-color: rgba(77,184,122,0.3); color: var(--green-text); }
+  .btn-green:hover { background: rgba(77,184,122,0.12); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+  .btn-row-split { display: flex; gap: 8px; justify-content: space-between; align-items: center; margin-top: 16px; }
+
+  /* Status badge */
+  .status-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 20px; margin-bottom: 14px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .status-online { background: var(--green-bg); color: var(--green-text); }
+  .status-online .status-dot { background: var(--green-text); }
+  .status-offline { background: var(--red-bg); color: var(--red-text); }
+  .status-offline .status-dot { background: var(--red-text); }
+  .status-checking { background: var(--bg3); color: var(--text3); }
+  .status-checking .status-dot { background: var(--text3); }
+
+  /* Alerts */
+  .alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 10px; }
+  .alert-success { background: var(--green-bg); color: var(--green-text); border: 0.5px solid rgba(77,184,122,0.2); }
+  .alert-info { background: var(--info-bg); color: var(--info-text); border: 0.5px solid rgba(74,159,212,0.2); }
+  .alert-warn { background: var(--warn-bg); color: var(--warn-text); border: 0.5px solid rgba(212,168,67,0.2); border-left: 3px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; }
+  .alert-error { background: var(--red-bg); color: var(--red-text); border: 0.5px solid rgba(224,85,85,0.2); }
+
+  /* Metrics */
+  .metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .metric { background: var(--bg3); border-radius: var(--radius); padding: 12px 14px; }
+  .metric-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .metric-value { font-size: 16px; font-weight: 600; color: var(--text); }
+  .metric-value.warn { color: var(--warn-text); }
+  .metric-value.good { color: var(--green-text); }
+
+  /* Weight badges */
+  .weight-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 20px; }
+  .pill-neutral { background: var(--bg3); color: var(--text2); border: 0.5px solid var(--border); }
+  .pill-active { background: var(--info-bg); color: var(--info-text); border: 0.5px solid rgba(74,159,212,0.3); }
+  .pill-warn { background: var(--warn-bg); color: var(--warn-text); border: 0.5px solid rgba(212,168,67,0.3); }
+
+  /* Billing table */
+  .billing-table { width: 100%; }
+  .billing-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 0.5px solid var(--border); gap: 8px; }
+  .billing-label { font-size: 13px; color: var(--text2); flex: 1; }
+  .billing-amount { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  .billing-free { font-size: 11px; background: var(--green-bg); color: var(--green-text); padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+  .billing-tbd { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; color: var(--text3); }
+  .billing-total { display: flex; justify-content: space-between; padding: 12px 0 0; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.15); }
+  .billing-total-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .billing-total-amount { font-size: 18px; font-weight: 700; color: var(--accent); }
+
+  /* Meta row */
+  .meta-row { display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; }
+  .meta-item span:first-child { color: var(--text3); }
+
+  /* Dim table */
+  .dim-header { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 36px; gap: 8px; margin-bottom: 4px; }
+  .dim-row-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 36px; gap: 8px; align-items: end; margin-bottom: 8px; }
+  .dim-col-label { font-size: 11px; color: var(--text3); }
+  .btn-remove { width: 36px; height: 36px; background: var(--bg3); border: 0.5px solid var(--border); border-radius: var(--radius); color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.15s; }
+  .btn-remove:hover { color: var(--red-text); border-color: rgba(224,85,85,0.3); }
+  .btn-add-dim { padding: 6px 12px; font-size: 12px; border: 0.5px dashed var(--border2); border-radius: var(--radius); background: transparent; color: var(--text3); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .btn-add-dim:hover { color: var(--text2); border-color: rgba(255,255,255,0.2); }
+  .dim-note { font-size: 11px; color: var(--text3); margin-top: 6px; }
+
+  /* Info box */
+  .info-box { background: var(--bg3); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 12px 14px; font-size: 12px; color: var(--text3); line-height: 1.7; }
+  .info-box strong { color: var(--text2); display: block; margin-bottom: 3px; }
+
+  /* Steps */
+  .step-bar { display: flex; align-items: center; gap: 0; margin-bottom: 20px; }
+  .step-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .step-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; border: 0.5px solid var(--border2); background: var(--bg3); color: var(--text3); }
+  .step-dot.active { background: rgba(212,168,67,0.15); border-color: rgba(212,168,67,0.4); color: var(--accent); }
+  .step-dot.done { background: var(--green-bg); border-color: rgba(77,184,122,0.3); color: var(--green-text); }
+  .step-label { font-size: 11px; color: var(--text3); white-space: nowrap; }
+  .step-label.active { color: var(--text2); }
+  .step-line { flex: 1; height: 0.5px; background: var(--border); align-self: center; margin-bottom: 16px; }
+
+  /* Spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(212,168,67,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+
+  @media (max-width: 600px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .metrics { grid-template-columns: 1fr 1fr; }
+    .btn-row-split { flex-direction: column; align-items: stretch; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    </div>
+    <div>
+      <div class="header-title">ATA Carnet Billing Schedule</div>
+      <div class="header-sub">Film Logic — International Freight Services</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('email')">Email agent</button>
+    <button class="tab" onclick="switchTab('manual')">Manual entry</button>
+  </div>
+
+  <div id="tab-email"></div>
+  <div id="tab-manual" style="display:none"></div>
+</div>
+
+<script>
+const API_BASE = "https://filmlogic-ata-backend-production.up.railway.app";
+const DIM_DIV = 6000;
+
+const ORIGINS = [
+  {label:"Europe (UK/Spain/France/Germany/Italy)",k:"europe"},
+  {label:"Canada (YVR/YYZ/YYC)",k:"canada"},
+  {label:"Mexico (MEX/NLU)",k:"mexico"},
+  {label:"Asia (Japan/Thailand/China)",k:"asia"},
+  {label:"Australia/New Zealand",k:"aus_nz"},
+  {label:"Middle East (UAE/Dubai)",k:"me"},
+  {label:"Latin America",k:"latam"}
+];
+const AIRPORTS = [
+  {label:"LAX – Los Angeles",k:"lax"},{label:"JFK – New York",k:"jfk"},
+  {label:"EWR – Newark",k:"ewr"},{label:"SFO – San Francisco",k:"sfo"},
+  {label:"ORD – Chicago",k:"ord"},{label:"ATL – Atlanta",k:"atl"},
+  {label:"BOS – Boston",k:"bos"},{label:"MIA – Miami",k:"mia"},
+  {label:"LAS – Las Vegas",k:"las"},{label:"IAD – Washington D.C.",k:"iad"}
+];
+
+function fmt(n){return Number(n).toLocaleString("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmtKg(n){return Math.round(n*10)/10}
+function calcDimWt(pieces){return pieces.reduce((s,p)=>{const l=parseFloat(p.l)||0,w=parseFloat(p.w)||0,h=parseFloat(p.h)||0,q=parseInt(p.qty)||1;return s+(l*w*h/DIM_DIV)*q;},0)}
+function getWt(actualKg,dimPieces){const a=parseFloat(actualKg)||0,d=Math.round(calcDimWt(dimPieces||[])*10)/10;return{actual:a,dimWt:d,chargeable:Math.max(a,d),useDim:d>a}}
+function getDelivery(ap,mi){const b={lax:125,jfk:250,ewr:175,sfo:195,ord:125,atl:115,bos:350,mia:195,las:295,iad:250}[ap]||150;return mi>50?Math.round(b+(mi-30)*1.8):b}
+function getForeign(o,pcs,kg){const b={europe:450,canada:295,mexico:925,asia:795,aus_nz:1200,me:1350,latam:1100}[o]||500;return(pcs>10||kg>500)?Math.round(b*1.15):b}
+function getBond(v){if(v<=10000)return Math.max(Math.round(v*0.01),100);if(v<=50000)return Math.max(Math.round(v*0.006),180);if(v<=100000)return Math.max(Math.round(v*0.006),300);if(v<=300000)return Math.max(Math.round(v*0.006),600);if(v<=600000)return Math.max(Math.round(v*0.0095),900);return Math.max(Math.round(v*0.0095),8550)}
+function getCouncil(v){if(v<=5400)return 305;if(v<=30000)return 330;if(v<=100000)return 375;if(v<=300000)return 475;if(v<=600000)return 545;return 695}
+function getIssuance(v){if(v<=5400)return 150;if(v<=30000)return 200;if(v<=100000)return 250;if(v<=300000)return 300;if(v<=600000)return 400;return 500}
+function originName(k){return(ORIGINS.find(r=>r.k===k)?.label||k).split(" (")[0]}
+function airportName(k){return(AIRPORTS.find(a=>a.k===k)?.label||k).split("–")[0].trim()}
+
+function buildQuote(f){
+  const val=parseFloat(f.value)||0,pcs=parseInt(f.pieces)||1;
+  const wi=getWt(f.weightKg,f.dimPieces||[]);
+  const mi=parseFloat(f.deliveryMiles)||20;
+  const lines=[],tbd=[];
+  lines.push({label:"Duties & Taxes (ATA Carnet)",amount:0,note:"Free"});
+  lines.push({label:"ACE User Fees",amount:24.5});
+  lines.push({label:"Brokerage Fees – ATA Carnet",amount:f.direction==="import_outport"?195:175});
+  lines.push({label:"CTPAT Fees",amount:25});
+  lines.push({label:"TSA Cyber Security Fee",amount:12.5});
+  if(f.direction==="import_outport")lines.push({label:"Outport – ATA Carnet Validation",amount:100});
+  lines.push({label:"Messenger Fees"+(f.hasSpecialMessenger?" (incl. Special Messenger)":""),amount:f.hasSpecialMessenger?245:95});
+  lines.push({label:"Estimated Import Service Fee at Cost",amount:250});
+  lines.push({label:"Disbursement Fees – 5% of Outlay / Minimum $25.00",amount:25});
+  if(f.hasAirlineRecovery)lines.push({label:"ATA Carnet Airline Recovery",amount:135});
+  lines.push({label:"Foreign Charges in "+originName(f.origin),amount:getForeign(f.origin,pcs,wi.chargeable)});
+  const del=getDelivery(f.destAirport,mi),fuel=Math.round(del*0.30);
+  lines.push({label:airportName(f.destAirport)+" Airport Recovery & Delivery",amount:del});
+  lines.push({label:"Fuel Surcharge",amount:fuel});
+  if(f.hasLiftGate)lines.push({label:"Lift Gate",amount:65});
+  if(f.hasOvertime)lines.push({label:"Overtime Services",amount:200});
+  else tbd.push("Overtime Services – $200.00 (If Applicable)");
+  tbd.push("Waiting Time – $65.00/hr after first 30 min free (If Applicable)");
+  if(f.includeCarnetIssuance){
+    lines.push({label:"US Council Carnet Charges",amount:getCouncil(val)});
+    lines.push({label:"Carnet Bond Fee",amount:getBond(val)});
+    lines.push({label:"Carnet Issuance",amount:getIssuance(val)});
+    lines.push({label:"Carnet Execution Fee",amount:175});
+    lines.push({label:"Carnet Closing Fees",amount:75});
+    lines.push({label:"Courier Fee",amount:85});
+    if(f.hasExpediteCarnet)lines.push({label:"Expedite Fees",amount:250});
+  }
+  return{lines,tbd,subtotal:lines.reduce((s,l)=>s+(l.amount||0),0),wi};
+}
+
+function weightPillsHTML(wi){
+  if(!wi||(!wi.actual&&!wi.dimWt))return "";
+  return `<div class="weight-pills">
+    <span class="pill ${wi.useDim?"pill-neutral":"pill-active"}">Actual: ${fmtKg(wi.actual)} kgs</span>
+    <span class="pill ${wi.useDim?"pill-active":"pill-neutral"}">Dimensional: ${fmtKg(wi.dimWt)} kgs</span>
+    <span class="pill ${wi.useDim?"pill-warn":"pill-active"}">Chargeable: ${fmtKg(wi.chargeable)} kgs (${wi.useDim?"dim":"actual"})</span>
+  </div>`;
+}
+
+function dimSectionHTML(dimPieces,prefix){
+  const wi=getWt(0,dimPieces);
+  let rows=dimPieces.map((p,i)=>`
+    <div class="dim-row-grid">
+      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 60" value="${p.l||""}" oninput="updateDim('${prefix}',${i},'l',this.value)"></div>
+      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 40" value="${p.w||""}" oninput="updateDim('${prefix}',${i},'w',this.value)"></div>
+      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 35" value="${p.h||""}" oninput="updateDim('${prefix}',${i},'h',this.value)"></div>
+      <div class="field" style="margin:0"><input type="number" min="1" placeholder="1" value="${p.qty||1}" oninput="updateDim('${prefix}',${i},'qty',this.value)"></div>
+      <button class="btn-remove" onclick="removeDim('${prefix}',${i})">×</button>
+    </div>`).join("");
+  return `<div id="${prefix}-dim-wrap">
+    <div style="margin-bottom:6px"><label class="field" style="display:block;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px">Cargo dimensions (cm)</label>
+    <div class="dim-header">
+      <span class="dim-col-label">Length</span><span class="dim-col-label">Width</span><span class="dim-col-label">Height</span><span class="dim-col-label">Qty</span><span></span>
+    </div>
+    <div id="${prefix}-dim-rows">${rows}</div>
+    <button class="btn-add-dim" onclick="addDim('${prefix}')">+ Add piece</button>
+    <p class="dim-note">Divisor: 6,000 cm³/kg (IATA air freight standard)</p>
+    </div>
+  </div>`;
+}
+
+function quoteHTML(result,form,backFn,editFn){
+  const wi=result.wi||{};
+  const lineRows=result.lines.map(l=>`<div class="billing-row"><span class="billing-label">${l.label}</span>${l.note?`<span class="billing-free">${l.note}</span>`:`<span class="billing-amount">${fmt(l.amount)}</span>`}</div>`).join("");
+  const tbdRows=result.tbd.map(t=>`<div class="billing-tbd"><span>${t}</span><span>TBD</span></div>`).join("");
+  const metaItems=[form.client&&`<span class="meta-item"><span>Client: </span>${form.client}</span>`,form.production&&`<span class="meta-item"><span>Production: </span>${form.production}</span>`,form.carnetNumber&&`<span class="meta-item"><span>Carnet #: </span>${form.carnetNumber}</span>`,form.commodity&&`<span class="meta-item"><span>Commodity: </span>${form.commodity}</span>`].filter(Boolean).join("");
+  return `
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Estimated total</div><div class="metric-value">${fmt(result.subtotal)}</div></div>
+      <div class="metric"><div class="metric-label">Chargeable weight</div><div class="metric-value">${fmtKg(wi.chargeable||0)} kgs</div></div>
+      <div class="metric"><div class="metric-label">Basis</div><div class="metric-value ${wi.useDim?"warn":"good"}">${wi.useDim?"Dimensional":"Actual"}</div></div>
+    </div>
+    ${weightPillsHTML(wi)}
+    ${metaItems?`<div class="card-sm"><div class="meta-row">${metaItems}</div></div>`:""}
+    <div class="card">
+      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px">Billing schedule</div>
+      <div class="billing-table">${lineRows}</div>
+      ${tbdRows?`<div style="margin-top:8px">${tbdRows}</div>`:""}
+      <div class="billing-total">
+        <span class="billing-total-label">Estimated total <span style="font-size:11px;font-weight:400;color:var(--text3)">(not including TBD charges)</span></span>
+        <span class="billing-total-amount">${fmt(result.subtotal)}</span>
+      </div>
+    </div>
+    ${form.notes?`<div class="alert alert-warn" style="margin-bottom:10px"><strong>Notes</strong>${form.notes}</div>`:""}
+    <div class="info-box" style="margin-bottom:14px"><strong>Disclaimer</strong>This estimate does not include cargo insurance, special handling, accessorial charges, waiting time, or airline storage. Rates subject to change. Valid 30 days.</div>
+    <div class="btn-row-split">
+      <button class="btn" onclick="${backFn}">← New quote</button>
+      <div style="display:flex;gap:8px">
+        ${editFn?`<button class="btn" onclick="${editFn}">Edit details</button>`:""}
+        <button class="btn btn-green" onclick="exportPDF(currentResult,currentForm)">Export PDF</button>
+        <button class="btn btn-primary" id="copy-btn" onclick="copyQuote(currentResult,currentForm)">Copy quote</button>
+      </div>
+    </div>`;
+}
+
+let currentResult=null, currentForm=null;
+
+function exportPDF(result,form){
+  if(!result||!form)return;
+  const wi=result.wi||{};
+  const now=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
+  const dir=form.direction?.includes("import")?"IMPORT":"RETURN";
+  const dimRows=(form.dimPieces||[]).filter(p=>p.l&&p.w&&p.h).map((p,i)=>{
+    const dw=Math.round((parseFloat(p.l)*parseFloat(p.w)*parseFloat(p.h)/DIM_DIV)*(parseInt(p.qty)||1)*10)/10;
+    return `<tr><td style="padding:5px 10px;font-size:11px;color:#555;border-bottom:0.5px solid #f0f0f0">Piece ${i+1}</td><td style="padding:5px 10px;font-size:11px;text-align:center;border-bottom:0.5px solid #f0f0f0">${p.l}×${p.w}×${p.h} cm</td><td style="padding:5px 10px;font-size:11px;text-align:center;border-bottom:0.5px solid #f0f0f0">${p.qty||1}</td><td style="padding:5px 10px;font-size:11px;text-align:right;border-bottom:0.5px solid #f0f0f0">${dw} kgs</td></tr>`;
+  }).join("");
+  const lineRows=result.lines.map(l=>`<tr><td style="padding:7px 10px;font-size:12px;color:#444;border-bottom:0.5px solid #e5e5e5">${l.label}</td><td style="padding:7px 10px;font-size:12px;text-align:right;border-bottom:0.5px solid #e5e5e5;font-weight:500">${l.note?`<span style="background:#e8f5ee;color:#1a7a4a;padding:2px 8px;border-radius:20px;font-size:11px">${l.note}</span>`:fmt(l.amount)}</td></tr>`).join("");
+  const tbdRows=result.tbd.map(t=>`<tr><td style="padding:4px 10px;font-size:11px;color:#aaa">${t}</td><td style="padding:4px 10px;font-size:11px;color:#aaa;text-align:right;font-style:italic">TBD</td></tr>`).join("");
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>ATA Carnet Quote – Film Logic</title><style>body{font-family:Arial,sans-serif;margin:0;padding:40px;color:#1a1a1a}@media print{.no-print{display:none}}</style></head><body>
+<div class="no-print" style="background:#f0f6ff;border:1px solid #b0ccee;border-radius:6px;padding:10px 14px;margin-bottom:20px;font-size:12px;color:#1a5fa0"><strong>Print to PDF:</strong> Ctrl+P / Cmd+P → Save as PDF.</div>
+<table style="width:100%;margin-bottom:20px"><tr><td><div style="font-size:22px;font-weight:800;letter-spacing:-0.5px">FILM LOGIC</div><div style="font-size:11px;color:#888;margin-top:2px">International Freight Services</div></td><td style="text-align:right"><div style="font-size:11px;color:#888">ATA Carnet Billing Schedule</div><div style="font-size:11px;color:#888">${now}</div></td></tr></table>
+<div style="height:2px;background:#0a0a0a;margin-bottom:18px"></div>
+<div style="background:#f7f7f7;border-radius:6px;padding:14px 16px;margin-bottom:18px">
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:${dimRows?"12px":"0"}">
+<div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Client</div><div style="font-size:13px;font-weight:600">${form.client||"—"}</div></div>
+<div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Production</div><div style="font-size:13px;font-weight:600">${form.production||"—"}</div></div>
+<div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Carnet #</div><div style="font-size:13px;font-weight:600">${form.carnetNumber||"TBD"}</div></div>
+<div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Type</div><div style="font-size:13px;font-weight:600">ATA Carnet ${dir}</div></div>
+<div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Route</div><div style="font-size:13px;font-weight:600">${originName(form.origin)} → ${airportName(form.destAirport)}</div></div>
+<div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Pieces</div><div style="font-size:13px;font-weight:600">${form.pieces||"—"}</div></div>
+</div>
+${dimRows?`<div style="border-top:0.5px solid #ddd;padding-top:10px"><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Weight calculation</div><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#eee"><th style="padding:5px 10px;font-size:10px;text-align:left;color:#555">Piece</th><th style="padding:5px 10px;font-size:10px;text-align:center;color:#555">Dimensions</th><th style="padding:5px 10px;font-size:10px;text-align:center;color:#555">Qty</th><th style="padding:5px 10px;font-size:10px;text-align:right;color:#555">Dim. weight</th></tr></thead><tbody>${dimRows}</tbody></table><div style="display:flex;gap:20px;margin-top:10px;font-size:12px"><span>Actual: <strong>${fmtKg(wi.actual||0)} kgs</strong></span><span>Dimensional: <strong>${fmtKg(wi.dimWt||0)} kgs</strong></span><span style="background:${wi.useDim?"#fff3cd":"#e8f5ee"};padding:2px 10px;border-radius:20px;font-weight:600;color:${wi.useDim?"#856404":"#1a7a4a"}">Chargeable: ${fmtKg(wi.chargeable||0)} kgs (${wi.useDim?"dimensional":"actual"})</span></div></div>`:""}
+${form.commodity?`<div style="margin-top:10px;padding-top:10px;border-top:0.5px solid #ddd;font-size:12px"><span style="color:#999">Commodity: </span>${form.commodity}</div>`:""}
+</div>
+<table style="width:100%;border-collapse:collapse;margin-bottom:8px"><thead><tr style="background:#0a0a0a"><th style="padding:8px 10px;text-align:left;font-size:11px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Description</th><th style="padding:8px 10px;text-align:right;font-size:11px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Amount (USD)</th></tr></thead><tbody>${lineRows}${tbdRows}</tbody></table>
+<table style="width:100%;border-collapse:collapse;margin-bottom:18px"><tr style="background:#0a0a0a"><td style="padding:10px;font-size:13px;color:#fff;font-weight:700">ESTIMATED TOTAL <span style="font-size:10px;font-weight:400;opacity:0.7">(not including TBD charges)</span></td><td style="padding:10px;font-size:16px;color:#fff;font-weight:700;text-align:right">${fmt(result.subtotal)}</td></tr></table>
+${form.notes?`<div style="background:#fffbeb;border-left:3px solid #d97706;padding:10px 14px;border-radius:0 4px 4px 0;margin-bottom:14px;font-size:12px"><strong>Notes: </strong>${form.notes}</div>`:""}
+<div style="border-top:0.5px solid #e0e0e0;padding-top:12px;font-size:10px;color:#aaa;line-height:1.7">This estimate does not include cargo insurance, special handling, accessorial charges, waiting time, or airline storage. Rates subject to change. Valid 30 days.</div>
+</body></html>`;
+  const w=window.open("","_blank","width=820,height=950");
+  if(w){w.document.write(html);w.document.close();}
+}
+
+function copyQuote(result,form){
+  if(!result||!form)return;
+  const wi=result.wi||{};
+  let t=`* * * ATA CARNET ${form.direction?.includes("import")?"IMPORT":"RETURN"} CLEARANCE & DELIVERY * * *\n`;
+  if(form.carnetNumber)t+=`ATA CARNET # ${form.carnetNumber}\n`;
+  if(form.client)t+=`Client: ${form.client}\n`;
+  if(form.production)t+=`Production: ${form.production}\n`;
+  if(form.pieces)t+=`${form.pieces} PCS / ${fmtKg(wi.chargeable||0)} KGS CHARGEABLE WT / VALUE $${(parseFloat(form.value)||0).toLocaleString()} USD\n`;
+  if(form.commodity)t+=`Commodity: ${form.commodity}\n`;
+  t+=`Origin: ${originName(form.origin)} → ${airportName(form.destAirport)}\n\n`;
+  result.lines.forEach(l=>{t+=`${l.label}\t${l.note||fmt(l.amount)}\n`;});
+  result.tbd.forEach(tb=>{t+=`${tb}\tTBD\n`;});
+  t+=`\nESTIMATED TOTAL\t${fmt(result.subtotal)}\n`;
+  if(form.notes)t+=`\nNotes: ${form.notes}\n`;
+  navigator.clipboard.writeText(t).then(()=>{
+    const btn=document.getElementById("copy-btn");
+    if(btn){btn.textContent="Copied!";setTimeout(()=>{btn.textContent="Copy quote"},2000);}
+  });
+}
+
+// ── Tab switching ──────────────────────────────────────────────────────
+function switchTab(tab){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach((t,i)=>{if((i===0&&tab==="email")||(i===1&&tab==="manual"))t.classList.add("active")});
+  document.getElementById("tab-email").style.display=tab==="email"?"block":"none";
+  document.getElementById("tab-manual").style.display=tab==="manual"?"block":"none";
+}
+
+// ── Server status ──────────────────────────────────────────────────────
+let serverStatus="checking";
+function updateStatusBadge(){
+  const el=document.getElementById("server-status");
+  if(!el)return;
+  const labels={online:"Railway server online",offline:"Railway server offline",checking:"Checking server…"};
+  el.className="status-badge status-"+serverStatus;
+  el.innerHTML=`<span class="status-dot"></span>${labels[serverStatus]}`;
+}
+function checkServer(){
+  fetch(API_BASE+"/api/health").then(r=>r.json()).then(()=>{serverStatus="online";updateStatusBadge();}).catch(()=>{serverStatus="offline";updateStatusBadge();});
+}
+setInterval(checkServer,15000);
+
+// ── Email agent state ──────────────────────────────────────────────────
+let emailState={email:"",status:"idle",extracted:null,result:null,error:"",editing:false};
+
+const EXAMPLE=`Hi team,\n\nNeed a quote for Aura Lens — ATA Carnet return from Mexico City (MEX) to LAX. Carnet # US42-2480245. 6 cases, actual weight 89 kgs, each case is 45×35×30 cm. Declared value $20,160 USD. Lift gate needed, delivery to Hawk Anamorphic about 15 miles from LAX.\n\nThanks`;
+
+function renderEmail(){
+  const c=document.getElementById("tab-email");
+  if(!c)return;
+  const s=emailState;
+
+  if(s.status==="done"&&s.result&&s.extracted){
+    if(!s.editing){
+      currentResult=s.result; currentForm=s.extracted;
+      c.innerHTML=`<div class="alert alert-success" style="margin-bottom:12px">✦ AI extracted shipment details via Railway — review the quote below before sending.</div>`+quoteHTML(s.result,s.extracted,"resetEmail()","editEmail()");
+      return;
+    }
+    // Edit view
+    const ex=s.extracted;
+    c.innerHTML=`<div class="alert alert-info" style="margin-bottom:12px">Edit any extracted fields then click Apply.</div>
+    <div class="card">
+      <div class="grid-2">
+        <div class="field"><label>Client</label><input value="${ex.client||""}" oninput="emailState.extracted.client=this.value;rebuildEmailQuote()"></div>
+        <div class="field"><label>Production</label><input value="${ex.production||""}" oninput="emailState.extracted.production=this.value;rebuildEmailQuote()"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>ATA Carnet #</label><input value="${ex.carnetNumber||""}" oninput="emailState.extracted.carnetNumber=this.value;rebuildEmailQuote()"></div>
+        <div class="field"><label>Direction</label><select onchange="emailState.extracted.direction=this.value;rebuildEmailQuote()">
+          <option value="import" ${ex.direction==="import"?"selected":""}>Import</option>
+          <option value="import_outport" ${ex.direction==="import_outport"?"selected":""}>Import via outport</option>
+          <option value="return" ${ex.direction==="return"?"selected":""}>Return</option>
+        </select></div>
+      </div>
+      <div class="field"><label>Commodity</label><input value="${ex.commodity||""}" oninput="emailState.extracted.commodity=this.value;rebuildEmailQuote()"></div>
+      <div class="grid-3">
+        <div class="field"><label>Pieces</label><input type="number" value="${ex.pieces||""}" oninput="emailState.extracted.pieces=this.value;rebuildEmailQuote()"></div>
+        <div class="field"><label>Actual weight (KGS)</label><input type="number" value="${ex.weightKg||""}" oninput="emailState.extracted.weightKg=this.value;rebuildEmailQuote()"></div>
+        <div class="field"><label>Value (USD)</label><input type="number" value="${ex.value||""}" oninput="emailState.extracted.value=this.value;rebuildEmailQuote()"></div>
+      </div>
+      ${dimSectionHTML(ex.dimPieces||[],"email-edit")}
+      <div class="grid-2" style="margin-top:12px">
+        <div class="field"><label>Origin</label><select onchange="emailState.extracted.origin=this.value;rebuildEmailQuote()">${ORIGINS.map(r=>`<option value="${r.k}" ${ex.origin===r.k?"selected":""}>${r.label}</option>`).join("")}</select></div>
+        <div class="field"><label>Destination airport</label><select onchange="emailState.extracted.destAirport=this.value;rebuildEmailQuote()">${AIRPORTS.map(a=>`<option value="${a.k}" ${ex.destAirport===a.k?"selected":""}>${a.label}</option>`).join("")}</select></div>
+      </div>
+      <div class="field"><label>Delivery distance (miles)</label><input type="number" value="${ex.deliveryMiles||20}" oninput="emailState.extracted.deliveryMiles=this.value;rebuildEmailQuote()"></div>
+      <div class="btn-row">
+        <button class="btn" onclick="emailState.editing=false;renderEmail()">← Back to quote</button>
+        <button class="btn btn-primary" onclick="emailState.editing=false;renderEmail()">Apply changes →</button>
+      </div>
+    </div>`;
+    initDimState("email-edit", ex.dimPieces||[]);
+    return;
+  }
+
+  c.innerHTML=`
+    <span class="status-badge status-${serverStatus}" id="server-status"><span class="status-dot"></span>${serverStatus==="online"?"Railway server online":serverStatus==="offline"?"Railway server offline":"Checking server…"}</span>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em">Paste the employee email</label>
+        <button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('email-input').value=EXAMPLE;emailState.email=EXAMPLE">Load example ↗</button>
+      </div>
+      <textarea id="email-input" style="width:100%;min-height:160px;resize:vertical;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius);padding:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;line-height:1.6" placeholder="Include origin, destination, pieces, weight, dimensions, and declared value for the best result…" oninput="emailState.email=this.value">${s.email}</textarea>
+      ${s.error?`<div class="alert alert-error" style="margin-top:8px">${s.error}</div>`:""}
+      <div class="btn-row">
+        <button class="btn btn-primary" id="parse-btn" onclick="parseEmail()" ${s.status==="loading"?"disabled":""}>
+          ${s.status==="loading"?'<span class="spinner"></span>Reading email…':'✦ Generate quote from email'}
+        </button>
+      </div>
+    </div>
+    <div class="info-box">
+      <strong>How it works</strong>
+      Paste any email with shipment details — the AI reads it, extracts every field including dimensions, calculates chargeable weight, and builds the full billing schedule. Review before sending to the client.
+    </div>`;
+}
+
+function resetEmail(){emailState={email:"",status:"idle",extracted:null,result:null,error:"",editing:false};renderEmail();}
+function editEmail(){emailState.editing=true;renderEmail();}
+function rebuildEmailQuote(){if(!emailState.extracted)return;emailState.result=buildQuote(emailState.extracted);if(!emailState.editing){currentResult=emailState.result;currentForm=emailState.extracted;}}
+
+async function parseEmail(){
+  const email=document.getElementById("email-input")?.value||emailState.email;
+  if(!email.trim())return;
+  emailState.email=email;emailState.status="loading";emailState.error="";renderEmail();
+  try{
+    const res=await fetch(API_BASE+"/api/parse-email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({emailBody:email})});
+    const data=await res.json();
+    if(!res.ok||!data.success)throw new Error(data.error||"Server error");
+    const parsed=data.data;
+    if(!parsed.dimPieces)parsed.dimPieces=[];
+    emailState.extracted=parsed;
+    emailState.result=buildQuote(parsed);
+    emailState.status="done";
+  }catch(err){
+    emailState.error="Could not parse the email: "+err.message;
+    emailState.status="idle";
+  }
+  renderEmail();
+}
+
+// ── Manual tab state ───────────────────────────────────────────────────
+let manualStep=1;
+let manualForm={client:"",production:"",carnetNumber:"",origin:"europe",destAirport:"lax",pieces:"",weightKg:"",value:"",commodity:"",deliveryMiles:20,hasLiftGate:false,hasOvertime:false,hasSpecialMessenger:false,hasAirlineRecovery:false,includeCarnetIssuance:false,hasExpediteCarnet:false,direction:"import",notes:"",dimPieces:[{l:"",w:"",h:"",qty:"1"}]};
+let manualResult=null;
+
+function renderManual(){
+  const c=document.getElementById("tab-manual");
+  if(!c)return;
+  const f=manualForm;
+
+  if(manualResult){
+    currentResult=manualResult;currentForm=manualForm;
+    c.innerHTML=quoteHTML(manualResult,manualForm,"resetManual()","editManual()");
+    return;
+  }
+
+  const stepBar=`<div class="step-bar">
+    <div class="step-item"><div class="step-dot ${manualStep===1?"active":manualStep>1?"done":""}">1</div><span class="step-label ${manualStep===1?"active":""}">Job details</span></div>
+    <div class="step-line"></div>
+    <div class="step-item"><div class="step-dot ${manualStep===2?"active":manualStep>2?"done":""}">2</div><span class="step-label ${manualStep===2?"active":""}">Shipment</span></div>
+    <div class="step-line"></div>
+    <div class="step-item"><div class="step-dot">3</div><span class="step-label">Quote</span></div>
+  </div>`;
+
+  if(manualStep===1){
+    const wi=getWt(f.weightKg,f.dimPieces);
+    c.innerHTML=stepBar+`<div class="card">
+      <div class="grid-2">
+        <div class="field"><label>Client</label><input placeholder="e.g. Paramount Pictures" value="${f.client}" oninput="manualForm.client=this.value"></div>
+        <div class="field"><label>Production title</label><input placeholder="e.g. Mission Impossible 8" value="${f.production}" oninput="manualForm.production=this.value"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>ATA Carnet #</label><input placeholder="e.g. US42-2480084" value="${f.carnetNumber}" oninput="manualForm.carnetNumber=this.value"></div>
+        <div class="field"><label>Direction</label><select onchange="manualForm.direction=this.value">
+          <option value="import" ${f.direction==="import"?"selected":""}>Import (inbound)</option>
+          <option value="import_outport" ${f.direction==="import_outport"?"selected":""}>Import via outport</option>
+          <option value="return" ${f.direction==="return"?"selected":""}>Return (outbound)</option>
+        </select></div>
+      </div>
+      <div class="field"><label>Commodity</label><input placeholder="e.g. Camera lenses, film props, wardrobe" value="${f.commodity}" oninput="manualForm.commodity=this.value"></div>
+      <div class="grid-2">
+        <div class="field"><label>No. of pieces</label><input type="number" min="1" placeholder="e.g. 6" value="${f.pieces}" oninput="manualForm.pieces=this.value"></div>
+        <div class="field"><label>Declared value (USD)</label><input type="number" min="0" placeholder="e.g. 24960" value="${f.value}" oninput="manualForm.value=this.value"></div>
+      </div>
+      <div class="divider"></div>
+      <div class="field"><label>Actual gross weight (KGS)</label><input type="number" min="0" placeholder="e.g. 89" value="${f.weightKg}" oninput="manualForm.weightKg=this.value;rerenderDimWt()"></div>
+      ${dimSectionHTML(f.dimPieces,"manual")}
+      <div class="divider"></div>
+      <label class="checkbox-row"><input type="checkbox" ${f.includeCarnetIssuance?"checked":""} onchange="manualForm.includeCarnetIssuance=this.checked;renderManual()"> Add US Council issuance, bond & closing fees</label>
+      ${f.includeCarnetIssuance?`<label class="checkbox-row" style="padding-left:20px"><input type="checkbox" ${f.hasExpediteCarnet?"checked":""} onchange="manualForm.hasExpediteCarnet=this.checked"> Rush / expedite (+$250)</label>`:""}
+      <div class="field" style="margin-top:10px"><label>Notes</label><textarea placeholder="Special instructions…" style="min-height:48px;resize:vertical" oninput="manualForm.notes=this.value">${f.notes}</textarea></div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="manualStep=2;renderManual()">Next: shipment →</button></div>
+    </div>`;
+    initDimState("manual",f.dimPieces);
+  } else {
+    c.innerHTML=stepBar+`<div class="card">
+      <div class="field"><label>Origin region</label><select onchange="manualForm.origin=this.value">${ORIGINS.map(r=>`<option value="${r.k}" ${f.origin===r.k?"selected":""}>${r.label}</option>`).join("")}</select></div>
+      <div class="grid-2">
+        <div class="field"><label>US destination airport</label><select onchange="manualForm.destAirport=this.value">${AIRPORTS.map(a=>`<option value="${a.k}" ${f.destAirport===a.k?"selected":""}>${a.label}</option>`).join("")}</select></div>
+        <div class="field"><label>Delivery distance (miles)</label><input type="number" min="0" value="${f.deliveryMiles}" oninput="manualForm.deliveryMiles=this.value"></div>
+      </div>
+      <div class="divider"></div>
+      <div style="margin-bottom:6px"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em">Additional services</label></div>
+      <div class="checkbox-grid">
+        <label class="checkbox-row"><input type="checkbox" ${f.hasLiftGate?"checked":""} onchange="manualForm.hasLiftGate=this.checked"> Lift gate (+$65)</label>
+        <label class="checkbox-row"><input type="checkbox" ${f.hasOvertime?"checked":""} onchange="manualForm.hasOvertime=this.checked"> Overtime (+$200)</label>
+        <label class="checkbox-row"><input type="checkbox" ${f.hasSpecialMessenger?"checked":""} onchange="manualForm.hasSpecialMessenger=this.checked"> Special messenger (+$150)</label>
+        <label class="checkbox-row"><input type="checkbox" ${f.hasAirlineRecovery?"checked":""} onchange="manualForm.hasAirlineRecovery=this.checked"> Airline recovery (+$135)</label>
+      </div>
+      <div class="btn-row-split">
+        <button class="btn" onclick="manualStep=1;renderManual()">← Back</button>
+        <button class="btn btn-primary" onclick="manualResult=buildQuote(manualForm);renderManual()">Generate quote →</button>
+      </div>
+    </div>`;
+  }
+}
+
+function resetManual(){manualStep=1;manualResult=null;manualForm={client:"",production:"",carnetNumber:"",origin:"europe",destAirport:"lax",pieces:"",weightKg:"",value:"",commodity:"",deliveryMiles:20,hasLiftGate:false,hasOvertime:false,hasSpecialMessenger:false,hasAirlineRecovery:false,includeCarnetIssuance:false,hasExpediteCarnet:false,direction:"import",notes:"",dimPieces:[{l:"",w:"",h:"",qty:"1"}]};renderManual();}
+function editManual(){manualResult=null;manualStep=1;renderManual();}
+function rerenderDimWt(){const wi=getWt(manualForm.weightKg,manualForm.dimPieces);/* live badge update could go here */}
+
+// ── Dimension state management ─────────────────────────────────────────
+const dimStates={};
+function initDimState(prefix,pieces){dimStates[prefix]=[...pieces.map(p=>({...p}))]}
+function addDim(prefix){
+  if(!dimStates[prefix])dimStates[prefix]=[];
+  dimStates[prefix].push({l:"",w:"",h:"",qty:"1"});
+  syncDimState(prefix);rerenderDimRows(prefix);
+}
+function removeDim(prefix,i){
+  if(!dimStates[prefix])return;
+  dimStates[prefix].splice(i,1);
+  syncDimState(prefix);rerenderDimRows(prefix);
+}
+function updateDim(prefix,i,k,v){
+  if(!dimStates[prefix]||!dimStates[prefix][i])return;
+  dimStates[prefix][i][k]=v;
+  syncDimState(prefix);
+}
+function syncDimState(prefix){
+  if(prefix==="manual"){manualForm.dimPieces=[...dimStates[prefix]];}
+  else if(prefix==="email-edit"&&emailState.extracted){emailState.extracted.dimPieces=[...dimStates[prefix]];rebuildEmailQuote();}
+}
+function rerenderDimRows(prefix){
+  const wrap=document.getElementById(prefix+"-dim-rows");
+  if(!wrap)return;
+  const pieces=dimStates[prefix]||[];
+  wrap.innerHTML=pieces.map((p,i)=>`
+    <div class="dim-row-grid">
+      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 60" value="${p.l||""}" oninput="updateDim('${prefix}',${i},'l',this.value)"></div>
+      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 40" value="${p.w||""}" oninput="updateDim('${prefix}',${i},'w',this.value)"></div>
+      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 35" value="${p.h||""}" oninput="updateDim('${prefix}',${i},'h',this.value)"></div>
+      <div class="field" style="margin:0"><input type="number" min="1" placeholder="1" value="${p.qty||1}" oninput="updateDim('${prefix}',${i},'qty',this.value)"></div>
+      <button class="btn-remove" onclick="removeDim('${prefix}',${i})">×</button>
+    </div>`).join("");
+}
+
+// ── Init ───────────────────────────────────────────────────────────────
+checkServer();
+renderEmail();
+renderManual();
+</script>
+</body>
+</html>
