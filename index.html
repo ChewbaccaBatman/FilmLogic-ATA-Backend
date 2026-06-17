@@ -5,17 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ATA Carnet Billing — Film Logic</title>
 <style>
-  :root {
-    --bg:#0f0f0f;--bg2:#1a1a1a;--bg3:#232323;
-    --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
-    --text:#f0ede8;--text2:#9e9b95;--text3:#5c5a56;
-    --accent:#d4a843;
-    --green-bg:#0d2418;--green-text:#4db87a;
-    --red-bg:#2a0d0d;--red-text:#e05555;
-    --info-bg:#0d1f2e;--info-text:#4a9fd4;
-    --warn-bg:#2a1f0a;--warn-text:#d4a843;
-    --radius:8px;--radius-lg:12px;
-  }
+  :root{--bg:#0f0f0f;--bg2:#1a1a1a;--bg3:#232323;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#f0ede8;--text2:#9e9b95;--text3:#5c5a56;--accent:#d4a843;--green-bg:#0d2418;--green-text:#4db87a;--red-bg:#2a0d0d;--red-text:#e05555;--info-bg:#0d1f2e;--info-text:#4a9fd4;--warn-bg:#2a1f0a;--warn-text:#d4a843;--radius:8px;--radius-lg:12px}
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
   .app{max-width:760px;margin:0 auto;padding:0 20px 60px}
@@ -48,7 +38,6 @@
   .btn-primary:hover{background:rgba(212,168,67,0.2)}
   .btn-green{background:var(--green-bg);border-color:rgba(77,184,122,0.3);color:var(--green-text)}
   .btn-green:hover{background:rgba(77,184,122,0.12)}
-  .btn-red{background:var(--red-bg);border-color:rgba(224,85,85,0.2);color:var(--red-text)}
   .btn:disabled{opacity:0.4;cursor:not-allowed}
   .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
   .btn-row-split{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:16px}
@@ -94,10 +83,7 @@
   .step-line{flex:1;height:0.5px;background:var(--border);align-self:center;margin-bottom:16px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(212,168,67,0.2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px}
-
-  /* ── Editable billing table ── */
   .billing-edit-row{display:grid;grid-template-columns:1fr 130px 36px;gap:8px;align-items:center;padding:5px 0;border-bottom:0.5px solid var(--border)}
-  .billing-edit-row.free-row{grid-template-columns:1fr 130px 36px}
   .billing-input-label{background:transparent;border:0.5px solid transparent;border-radius:var(--radius);padding:5px 6px;color:var(--text2);font-size:13px;font-family:inherit;outline:none;width:100%;transition:all 0.15s}
   .billing-input-label:hover{border-color:var(--border2)}
   .billing-input-label:focus{border-color:var(--accent);background:var(--bg3);color:var(--text)}
@@ -117,13 +103,7 @@
   .add-line-row input::placeholder{color:var(--text3)}
   .section-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
   .edit-hint{font-size:11px;color:var(--text3);font-style:italic;font-weight:400;text-transform:none;letter-spacing:0}
-
-  @media(max-width:600px){
-    .grid-2,.grid-3{grid-template-columns:1fr}
-    .metrics{grid-template-columns:1fr 1fr}
-    .btn-row-split{flex-direction:column;align-items:stretch}
-    .billing-edit-row,.billing-tbd-row,.add-line-row{grid-template-columns:1fr 100px 36px}
-  }
+  @media(max-width:600px){.grid-2,.grid-3{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.btn-row-split{flex-direction:column;align-items:stretch}.billing-edit-row,.billing-tbd-row,.add-line-row{grid-template-columns:1fr 100px 36px}}
 </style>
 </head>
 <body>
@@ -137,12 +117,10 @@
       <div class="header-sub">Film Logic — International Freight Services</div>
     </div>
   </div>
-
   <div class="tabs">
     <button class="tab active" onclick="switchTab('email')">Email agent</button>
     <button class="tab" onclick="switchTab('manual')">Manual entry</button>
   </div>
-
   <div id="tab-email"></div>
   <div id="tab-manual" style="display:none"></div>
 </div>
@@ -151,119 +129,156 @@
 const API_BASE="https://filmlogic-ata-backend-production.up.railway.app";
 const DIM_DIV=6000;
 
-const ORIGINS=[{label:"Europe (UK/Spain/France/Germany/Italy)",k:"europe"},{label:"Canada (YVR/YYZ/YYC)",k:"canada"},{label:"Mexico (MEX/NLU)",k:"mexico"},{label:"Asia (Japan/Thailand/China)",k:"asia"},{label:"Australia/New Zealand",k:"aus_nz"},{label:"Middle East (UAE/Dubai)",k:"me"},{label:"Latin America",k:"latam"}];
+const ORIGINS=[{label:"Europe (UK/Spain/France/Germany/Italy)",k:"europe"},{label:"Canada (YVR/YYZ/YYC)",k:"canada"},{label:"Mexico (MEX/NLU)",k:"mexico"},{label:"Asia (Japan/Thailand/China/Korea)",k:"asia"},{label:"Australia/New Zealand",k:"aus_nz"},{label:"Middle East (UAE/Dubai)",k:"me"},{label:"Latin America",k:"latam"}];
 const AIRPORTS=[{label:"LAX – Los Angeles",k:"lax"},{label:"JFK – New York",k:"jfk"},{label:"EWR – Newark",k:"ewr"},{label:"SFO – San Francisco",k:"sfo"},{label:"ORD – Chicago",k:"ord"},{label:"ATL – Atlanta",k:"atl"},{label:"BOS – Boston",k:"bos"},{label:"MIA – Miami",k:"mia"},{label:"LAS – Las Vegas",k:"las"},{label:"IAD – Washington D.C.",k:"iad"}];
+const OUTPORTS=["jfk","ewr","sfo","ord","atl","bos","mia","las","iad"]; // not lax
 
 function fmt(n){return Number(n||0).toLocaleString("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2})}
 function fmtKg(n){return Math.round(n*10)/10}
 function parseDollars(s){return parseFloat(String(s).replace(/[$,]/g,""))||0}
 function calcDimWt(pieces){return pieces.reduce((s,p)=>{const l=parseFloat(p.l)||0,w=parseFloat(p.w)||0,h=parseFloat(p.h)||0,q=parseInt(p.qty)||1;return s+(l*w*h/DIM_DIV)*q;},0)}
 function getWt(actualKg,dimPieces){const a=parseFloat(actualKg)||0,d=Math.round(calcDimWt(dimPieces||[])*10)/10;return{actual:a,dimWt:d,chargeable:Math.max(a,d),useDim:d>a}}
-function getDelivery(ap,mi){const b={lax:125,jfk:250,ewr:175,sfo:195,ord:125,atl:115,bos:350,mia:195,las:295,iad:250}[ap]||150;return mi>50?Math.round(b+(mi-30)*1.8):b}
-function getForeign(o,pcs,kg){const b={europe:450,canada:295,mexico:925,asia:795,aus_nz:1200,me:1350,latam:1100}[o]||500;return(pcs>10||kg>500)?Math.round(b*1.15):b}
-function getBond(v){if(v<=10000)return Math.max(Math.round(v*0.01),100);if(v<=50000)return Math.max(Math.round(v*0.006),180);if(v<=100000)return Math.max(Math.round(v*0.006),300);if(v<=300000)return Math.max(Math.round(v*0.006),600);if(v<=600000)return Math.max(Math.round(v*0.0095),900);return Math.max(Math.round(v*0.0095),8550)}
-function getCouncil(v){if(v<=5400)return 305;if(v<=30000)return 330;if(v<=100000)return 375;if(v<=300000)return 475;if(v<=600000)return 545;return 695}
-function getIssuance(v){if(v<=5400)return 150;if(v<=30000)return 200;if(v<=100000)return 250;if(v<=300000)return 300;if(v<=600000)return 400;return 500}
 function originName(k){return(ORIGINS.find(r=>r.k===k)?.label||k).split(" (")[0]}
 function airportName(k){return(AIRPORTS.find(a=>a.k===k)?.label||k).split("–")[0].trim()}
+function isOutport(ap){return OUTPORTS.includes(ap)}
+
+// ── CORRECTED fee engine (from official Film Logic fee schedule) ──────
+function getDelivery(ap,mi){
+  // Base rates by airport
+  const b={lax:125,jfk:250,ewr:175,sfo:195,ord:125,atl:115,bos:350,mia:195,las:295,iad:250}[ap]||150;
+  return mi>50?Math.round(b+(mi-30)*1.8):b;
+}
+function getForeign(o,pcs,kg){
+  const b={europe:450,canada:295,mexico:925,asia:795,aus_nz:1200,me:1350,latam:1100}[o]||500;
+  return(pcs>10||kg>500)?Math.round(b*1.15):b;
+}
+function getCouncilFee(v){
+  if(v<10000)return 305;
+  if(v<50000)return 350;
+  if(v<150000)return 415;
+  if(v<400000)return 475;
+  if(v<1000000)return 530;
+  return 595;
+}
+function getBond(v,vehicleType){
+  // General commodities: 40% of value × 1.5% / min $125
+  // Vehicle corp: 100% × 1.5% / min $125
+  // Vehicle individual: 150% × 1.5% / min $125
+  const multiplier=vehicleType==="corp"?1.0:vehicleType==="individual"?1.5:0.40;
+  return Math.max(Math.round(v*multiplier*0.015*100)/100,125);
+}
+function getIssuanceFee(v){
+  if(v<10000)return 150;
+  if(v<50000)return 200;
+  if(v<150000)return 250;
+  if(v<400000)return 300;
+  if(v<1000000)return 350;
+  return 400;
+}
+function getMessengerFee(ap){
+  // $125 at outports, $95 at LAX/LGB
+  return isOutport(ap)?125:95;
+}
 
 function buildQuote(f){
   const val=parseFloat(f.value)||0,pcs=parseInt(f.pieces)||1;
   const wi=getWt(f.weightKg,f.dimPieces||[]);
   const mi=parseFloat(f.deliveryMiles)||20;
+  const outport=isOutport(f.destAirport);
   const lines=[],tbd=[];
+
   lines.push({label:"Duties & Taxes (ATA Carnet)",amount:0,note:"Free"});
   lines.push({label:"ACE User Fees",amount:24.5});
-  lines.push({label:"Brokerage Fees – ATA Carnet",amount:f.direction==="import_outport"?195:175});
-  lines.push({label:"CTPAT Fees",amount:25});
+  lines.push({label:"Brokerage Fees – ATA Carnet",amount:195}); // flat $195 per carnet
+  lines.push({label:"CTPAT Fees (Customs Trade Partnership Against Terrorism)",amount:25});
   lines.push({label:"TSA Cyber Security Fee",amount:12.5});
-  if(f.direction==="import_outport")lines.push({label:"Outport – ATA Carnet Validation",amount:100});
-  lines.push({label:"Messenger Fees"+(f.hasSpecialMessenger?" (incl. Special Messenger)":""),amount:f.hasSpecialMessenger?245:95});
-  lines.push({label:"Estimated Import Service Fee at Cost",amount:250});
+
+  if(outport){
+    lines.push({label:"Outport – Any port other than LAX/LGB",amount:150});
+  }
+
+  const messengerFee=getMessengerFee(f.destAirport);
+  lines.push({label:"Messenger Fees"+(f.hasSpecialMessenger?" (incl. Special Messenger)":""),amount:f.hasSpecialMessenger?messengerFee+150:messengerFee});
+
+  lines.push({label:"Import Service Fees at Cost",amount:0,note:"TBD"});
   lines.push({label:"Disbursement Fees – 5% of Outlay / Minimum $25.00",amount:25});
+
   if(f.hasAirlineRecovery)lines.push({label:"ATA Carnet Airline Recovery",amount:135});
-  lines.push({label:"Foreign Charges in "+originName(f.origin),amount:getForeign(f.origin,pcs,wi.chargeable)});
+
+  const fc=getForeign(f.origin,pcs,wi.chargeable);
+  lines.push({label:"Foreign Charges in "+originName(f.origin),amount:fc});
+
   const del=getDelivery(f.destAirport,mi),fuel=Math.round(del*0.30);
   lines.push({label:airportName(f.destAirport)+" Airport Recovery & Delivery",amount:del});
   lines.push({label:"Fuel Surcharge",amount:fuel});
+
   if(f.hasLiftGate)lines.push({label:"Lift Gate",amount:65});
   if(f.hasOvertime)lines.push({label:"Overtime Services",amount:200});
   else tbd.push("Overtime Services – $200.00 (If Applicable)");
   tbd.push("Waiting Time – $65.00/hr after first 30 min free (If Applicable)");
+  tbd.push("3% Credit Card Fee (If Applicable)");
+
   if(f.includeCarnetIssuance){
-    lines.push({label:"US Council Carnet Charges",amount:getCouncil(val)});
-    lines.push({label:"Carnet Bond Fee",amount:getBond(val)});
-    lines.push({label:"Carnet Issuance",amount:getIssuance(val)});
-    lines.push({label:"Carnet Execution Fee",amount:175});
-    lines.push({label:"Carnet Closing Fees",amount:75});
-    lines.push({label:"Courier Fee",amount:85});
+    lines.push({label:"US Council Carnet Charges",amount:getCouncilFee(val)});
+    lines.push({label:"Carnet Bond Fee",amount:getBond(val,f.vehicleType||"")});
+    lines.push({label:"Carnet Issuance",amount:getIssuanceFee(val)});
+    lines.push({label:"ATA Carnet Closing Fees",amount:75});
+    lines.push({label:"Lost Document Fee",amount:45});
     if(f.hasExpediteCarnet)lines.push({label:"Expedite Fees",amount:250});
+    tbd.push("FedEx/Courier Fee for Carnet Delivery (At Cost)");
   }
-  return{lines,tbd,subtotal:lines.reduce((s,l)=>s+(l.amount||0),0),wi};
+
+  // Filter out TBD-note items from subtotal
+  const subtotal=lines.reduce((s,l)=>s+(l.note==="TBD"||l.note==="Free"?0:parseDollars(l.amount)),0);
+  return{lines,tbd,subtotal,wi};
 }
 
 // ── Editable billing state ─────────────────────────────────────────────
-let editableLines=[];    // [{label, amount, note, isFree}]
-let editableTbd=[];      // [string]
-let newLineLabel="";
-let newLineAmount="";
+let editableLines=[],editableTbd=[],newLineLabel="",newLineAmount="";
 
 function initEditableLines(result){
   editableLines=result.lines.map(l=>({...l}));
   editableTbd=[...result.tbd];
   newLineLabel="";newLineAmount="";
 }
-
 function editableTotal(){
-  return editableLines.reduce((s,l)=>s+(l.note==="Free"?0:parseDollars(l.amount)),0);
+  return editableLines.reduce((s,l)=>s+(l.note==="Free"||l.note==="TBD"?0:parseDollars(l.amount)),0);
 }
-
 function updateLineLabel(i,v){editableLines[i].label=v;refreshTotal()}
-function updateLineAmount(i,v){editableLines[i].amount=parseDollars(v);refreshTotal()}
+function updateLineAmount(i,v){editableLines[i].amount=parseDollars(v);editableLines[i].note=undefined;refreshTotal()}
 function removeLine(i){editableLines.splice(i,1);refreshTotal();rerenderBillingTable()}
 function removeTbd(i){editableTbd.splice(i,1);rerenderBillingTable()}
 function addCustomLine(){
   if(!newLineLabel.trim())return;
   editableLines.push({label:newLineLabel,amount:parseDollars(newLineAmount)||0});
   newLineLabel="";newLineAmount="";
-  rerenderBillingTable();
-  refreshTotal();
+  rerenderBillingTable();refreshTotal();
 }
-
 function refreshTotal(){
   const el=document.getElementById("billing-total-amount");
   if(el)el.textContent=fmt(editableTotal());
-  updateMetricTotal();
+  const el2=document.getElementById("metric-total");
+  if(el2)el2.textContent=fmt(editableTotal());
 }
-
-function updateMetricTotal(){
-  const el=document.getElementById("metric-total");
-  if(el)el.textContent=fmt(editableTotal());
-}
-
 function rerenderBillingTable(){
   const wrap=document.getElementById("billing-table-wrap");
   if(wrap)wrap.innerHTML=billingTableHTML();
 }
-
 function billingTableHTML(){
   const rows=editableLines.map((l,i)=>`
     <div class="billing-edit-row">
-      <input class="billing-input-label" value="${(l.label||"").replace(/"/g,"&quot;")}" oninput="updateLineLabel(${i},this.value)" placeholder="Line item description">
-      ${l.note==="Free"
-        ? `<div class="billing-free-badge">Free</div>`
-        : `<input class="billing-input-amount" value="${fmt(l.amount||0)}" onfocus="this.value='${l.amount||0}'" onblur="this.value=fmt(this.value=parseFloat(this.value)||0);updateLineAmount(${i},this.value)" oninput="updateLineAmount(${i},this.value)">`
-      }
-      <button class="btn-remove" onclick="removeLine(${i})" title="Remove line">×</button>
+      <input class="billing-input-label" value="${(l.label||"").replace(/"/g,"&quot;")}" oninput="updateLineLabel(${i},this.value)" placeholder="Line item">
+      ${l.note==="Free"?`<div class="billing-free-badge">Free</div>`:
+        l.note==="TBD"?`<div style="font-size:12px;color:var(--text3);text-align:right;font-style:italic">TBD</div>`:
+        `<input class="billing-input-amount" value="${fmt(l.amount||0)}" onfocus="this.value='${l.amount||0}'" onblur="this.value=fmt(parseFloat(this.value)||0);updateLineAmount(${i},this.value)" oninput="updateLineAmount(${i},this.value)">`}
+      <button class="btn-remove" onclick="removeLine(${i})" title="Remove">×</button>
     </div>`).join("");
-
   const tbdRows=editableTbd.map((t,i)=>`
     <div class="billing-tbd-row">
       <span class="billing-tbd-label">${t}</span>
       <span class="billing-tbd-val">TBD</span>
-      <button class="btn-remove" onclick="removeTbd(${i})" title="Remove">×</button>
+      <button class="btn-remove" onclick="removeTbd(${i})">×</button>
     </div>`).join("");
-
   return `${rows}
     ${tbdRows?`<div style="margin-top:6px">${tbdRows}</div>`:""}
     <div style="border-top:0.5px solid var(--border);margin-top:10px;padding-top:10px">
@@ -276,7 +291,6 @@ function billingTableHTML(){
     </div>`;
 }
 
-// ── Quote view (with editable table) ──────────────────────────────────
 function quoteHTML(result,form,backFn,editFn){
   const wi=result.wi||{};
   const metaItems=[
@@ -285,29 +299,21 @@ function quoteHTML(result,form,backFn,editFn){
     form.carnetNumber&&`<span class="meta-item"><span>Carnet #: </span>${form.carnetNumber}</span>`,
     form.commodity&&`<span class="meta-item"><span>Commodity: </span>${form.commodity}</span>`
   ].filter(Boolean).join("");
-
-  const pillsHTML=()=>{
-    if(!wi||(!wi.actual&&!wi.dimWt))return "";
-    return `<div class="weight-pills">
-      <span class="pill ${wi.useDim?"pill-neutral":"pill-active"}">Actual: ${fmtKg(wi.actual)} kgs</span>
-      <span class="pill ${wi.useDim?"pill-active":"pill-neutral"}">Dimensional: ${fmtKg(wi.dimWt)} kgs</span>
-      <span class="pill ${wi.useDim?"pill-warn":"pill-active"}">Chargeable: ${fmtKg(wi.chargeable)} kgs (${wi.useDim?"dim":"actual"})</span>
-    </div>`;
-  };
-
+  const pillsHTML=(wi.actual||wi.dimWt)?`<div class="weight-pills">
+    <span class="pill ${wi.useDim?"pill-neutral":"pill-active"}">Actual: ${fmtKg(wi.actual)} kgs</span>
+    <span class="pill ${wi.useDim?"pill-active":"pill-neutral"}">Dimensional: ${fmtKg(wi.dimWt)} kgs</span>
+    <span class="pill ${wi.useDim?"pill-warn":"pill-active"}">Chargeable: ${fmtKg(wi.chargeable)} kgs (${wi.useDim?"dim":"actual"})</span>
+  </div>`:"";
   return `
     <div class="metrics">
       <div class="metric"><div class="metric-label">Estimated total</div><div class="metric-value" id="metric-total">${fmt(editableTotal())}</div></div>
       <div class="metric"><div class="metric-label">Chargeable weight</div><div class="metric-value">${fmtKg(wi.chargeable||0)} kgs</div></div>
       <div class="metric"><div class="metric-label">Basis</div><div class="metric-value ${wi.useDim?"warn":"good"}">${wi.useDim?"Dimensional":"Actual"}</div></div>
     </div>
-    ${pillsHTML()}
+    ${pillsHTML}
     ${metaItems?`<div class="card-sm"><div class="meta-row">${metaItems}</div></div>`:""}
     <div class="card">
-      <div class="section-label">
-        Billing schedule
-        <span class="edit-hint">Click any line to edit label or amount — or remove it</span>
-      </div>
+      <div class="section-label">Billing schedule <span class="edit-hint">Click any line to edit — or remove it</span></div>
       <div id="billing-table-wrap">${billingTableHTML()}</div>
       <div class="billing-total-row">
         <span class="billing-total-label">Estimated total <span style="font-size:11px;font-weight:400;color:var(--text3)">(not including TBD charges)</span></span>
@@ -315,7 +321,7 @@ function quoteHTML(result,form,backFn,editFn){
       </div>
     </div>
     ${form.notes?`<div class="alert alert-warn" style="margin-bottom:10px"><strong>Notes: </strong>${form.notes}</div>`:""}
-    <div class="info-box" style="margin-bottom:14px"><strong>Disclaimer</strong>This estimate does not include cargo insurance, special handling, accessorial charges, waiting time, or airline storage. Rates subject to change. Valid 30 days.</div>
+    <div class="info-box" style="margin-bottom:14px"><strong>Disclosure</strong>Validity of this estimate is 7 days and is subject to change based on space and availability. Final charges may be adjusted upon verification of pieces, weight, dimensions, and declared value. This estimate does not include cargo insurance, inside delivery, special handling, or accessorial charges. Any claim must be filed within 7 days of delivery.</div>
     <div class="btn-row-split">
       <button class="btn" onclick="${backFn}">← New quote</button>
       <div style="display:flex;gap:8px">
@@ -326,39 +332,49 @@ function quoteHTML(result,form,backFn,editFn){
     </div>`;
 }
 
-// ── Export PDF (reads live editable state) ─────────────────────────────
+let currentForm=null;
+
 function exportPDF(form){
   if(!form)return;
   const wi=getWt(form.weightKg,form.dimPieces||[]);
   const now=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
-  const dir=form.direction?.includes("import")?"IMPORT":"RETURN";
+  const dir=form.direction?.includes("import")?"IMPORT":form.direction==="export"?"EXPORT":"RETURN";
+  const outport=isOutport(form.destAirport);
   const dimRows=(form.dimPieces||[]).filter(p=>p.l&&p.w&&p.h).map((p,i)=>{
     const dw=Math.round((parseFloat(p.l)*parseFloat(p.w)*parseFloat(p.h)/DIM_DIV)*(parseInt(p.qty)||1)*10)/10;
     return `<tr><td style="padding:5px 10px;font-size:11px;color:#555;border-bottom:0.5px solid #f0f0f0">Piece ${i+1}</td><td style="padding:5px 10px;font-size:11px;text-align:center;border-bottom:0.5px solid #f0f0f0">${p.l}×${p.w}×${p.h} cm</td><td style="padding:5px 10px;font-size:11px;text-align:center;border-bottom:0.5px solid #f0f0f0">${p.qty||1}</td><td style="padding:5px 10px;font-size:11px;text-align:right;border-bottom:0.5px solid #f0f0f0">${dw} kgs</td></tr>`;
   }).join("");
-  const lineRows=editableLines.map(l=>`<tr><td style="padding:7px 10px;font-size:12px;color:#444;border-bottom:0.5px solid #e5e5e5">${l.label}</td><td style="padding:7px 10px;font-size:12px;text-align:right;border-bottom:0.5px solid #e5e5e5;font-weight:500">${l.note==="Free"?`<span style="background:#e8f5ee;color:#1a7a4a;padding:2px 8px;border-radius:20px;font-size:11px">Free</span>`:fmt(l.amount)}</td></tr>`).join("");
+  const lineRows=editableLines.map(l=>`<tr><td style="padding:7px 10px;font-size:12px;color:#444;border-bottom:0.5px solid #e5e5e5">${l.label}</td><td style="padding:7px 10px;font-size:12px;text-align:right;border-bottom:0.5px solid #e5e5e5;font-weight:500">${l.note==="Free"?`<span style="background:#e8f5ee;color:#1a7a4a;padding:2px 8px;border-radius:20px;font-size:11px">Free</span>`:l.note==="TBD"?`<span style="color:#aaa;font-style:italic">TBD</span>`:fmt(l.amount)}</td></tr>`).join("");
   const tbdRows=editableTbd.map(t=>`<tr><td style="padding:4px 10px;font-size:11px;color:#aaa">${t}</td><td style="padding:4px 10px;font-size:11px;color:#aaa;text-align:right;font-style:italic">TBD</td></tr>`).join("");
-  const total=editableTotal();
   const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>ATA Carnet Quote – Film Logic</title><style>body{font-family:Arial,sans-serif;margin:0;padding:40px;color:#1a1a1a}@media print{.no-print{display:none}}</style></head><body>
 <div class="no-print" style="background:#f0f6ff;border:1px solid #b0ccee;border-radius:6px;padding:10px 14px;margin-bottom:20px;font-size:12px;color:#1a5fa0"><strong>Print to PDF:</strong> Ctrl+P / Cmd+P → Save as PDF.</div>
-<table style="width:100%;margin-bottom:20px"><tr><td><div style="font-size:22px;font-weight:800;letter-spacing:-0.5px">FILM LOGIC</div><div style="font-size:11px;color:#888;margin-top:2px">International Freight Services</div></td><td style="text-align:right"><div style="font-size:11px;color:#888">ATA Carnet Billing Schedule</div><div style="font-size:11px;color:#888">${now}</div></td></tr></table>
+<table style="width:100%;margin-bottom:20px"><tr><td><div style="font-size:22px;font-weight:800;letter-spacing:-0.5px">FILM LOGIC</div><div style="font-size:11px;color:#888;margin-top:2px">International Freight Services — 15100 S. Broadway, Gardena, CA 90248 — Tel: 310.352.1122</div></td><td style="text-align:right"><div style="font-size:11px;color:#888">ATA Carnet Billing Schedule</div><div style="font-size:11px;color:#888">${now}</div></td></tr></table>
 <div style="height:2px;background:#0a0a0a;margin-bottom:18px"></div>
 <div style="background:#f7f7f7;border-radius:6px;padding:14px 16px;margin-bottom:18px">
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:${dimRows?"12px":"0"}">
 <div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Client</div><div style="font-size:13px;font-weight:600">${form.client||"—"}</div></div>
 <div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Production</div><div style="font-size:13px;font-weight:600">${form.production||"—"}</div></div>
 <div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Carnet #</div><div style="font-size:13px;font-weight:600">${form.carnetNumber||"TBD"}</div></div>
-<div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Type</div><div style="font-size:13px;font-weight:600">ATA Carnet ${dir}</div></div>
+<div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Type</div><div style="font-size:13px;font-weight:600">ATA Carnet ${dir}${outport?" (Outport)":""}</div></div>
 <div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Route</div><div style="font-size:13px;font-weight:600">${originName(form.origin)} → ${airportName(form.destAirport)}</div></div>
-<div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Pieces</div><div style="font-size:13px;font-weight:600">${form.pieces||"—"}</div></div>
+<div><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Pieces</div><div style="font-size:13px;font-weight:600">${form.pieces||"—"} pcs / ${fmtKg(wi.chargeable||0)} kgs chargeable</div></div>
 </div>
-${dimRows?`<div style="border-top:0.5px solid #ddd;padding-top:10px"><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Weight calculation</div><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#eee"><th style="padding:5px 10px;font-size:10px;text-align:left;color:#555">Piece</th><th style="padding:5px 10px;font-size:10px;text-align:center;color:#555">Dimensions</th><th style="padding:5px 10px;font-size:10px;text-align:center;color:#555">Qty</th><th style="padding:5px 10px;font-size:10px;text-align:right;color:#555">Dim. weight</th></tr></thead><tbody>${dimRows}</tbody></table><div style="display:flex;gap:20px;margin-top:10px;font-size:12px"><span>Actual: <strong>${fmtKg(wi.actual||0)} kgs</strong></span><span>Dimensional: <strong>${fmtKg(wi.dimWt||0)} kgs</strong></span><span style="background:${wi.useDim?"#fff3cd":"#e8f5ee"};padding:2px 10px;border-radius:20px;font-weight:600;color:${wi.useDim?"#856404":"#1a7a4a"}">Chargeable: ${fmtKg(wi.chargeable||0)} kgs (${wi.useDim?"dimensional":"actual"})</span></div></div>`:""}
+${dimRows?`<div style="border-top:0.5px solid #ddd;padding-top:10px"><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Weight calculation</div><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#eee"><th style="padding:5px 10px;font-size:10px;text-align:left;color:#555">Piece</th><th style="padding:5px 10px;font-size:10px;text-align:center;color:#555">Dimensions (cm)</th><th style="padding:5px 10px;font-size:10px;text-align:center;color:#555">Qty</th><th style="padding:5px 10px;font-size:10px;text-align:right;color:#555">Dim. weight</th></tr></thead><tbody>${dimRows}</tbody></table><div style="display:flex;gap:20px;margin-top:10px;font-size:12px"><span>Actual: <strong>${fmtKg(wi.actual||0)} kgs</strong></span><span>Dimensional: <strong>${fmtKg(wi.dimWt||0)} kgs</strong></span><span style="background:${wi.useDim?"#fff3cd":"#e8f5ee"};padding:2px 10px;border-radius:20px;font-weight:600;color:${wi.useDim?"#856404":"#1a7a4a"}">Chargeable: ${fmtKg(wi.chargeable||0)} kgs (${wi.useDim?"dimensional":"actual"})</span></div></div>`:""}
 ${form.commodity?`<div style="margin-top:10px;padding-top:10px;border-top:0.5px solid #ddd;font-size:12px"><span style="color:#999">Commodity: </span>${form.commodity}</div>`:""}
 </div>
 <table style="width:100%;border-collapse:collapse;margin-bottom:8px"><thead><tr style="background:#0a0a0a"><th style="padding:8px 10px;text-align:left;font-size:11px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Description</th><th style="padding:8px 10px;text-align:right;font-size:11px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Amount (USD)</th></tr></thead><tbody>${lineRows}${tbdRows}</tbody></table>
-<table style="width:100%;border-collapse:collapse;margin-bottom:18px"><tr style="background:#0a0a0a"><td style="padding:10px;font-size:13px;color:#fff;font-weight:700">ESTIMATED TOTAL <span style="font-size:10px;font-weight:400;opacity:0.7">(not including TBD charges)</span></td><td style="padding:10px;font-size:16px;color:#fff;font-weight:700;text-align:right">${fmt(total)}</td></tr></table>
+<table style="width:100%;border-collapse:collapse;margin-bottom:18px"><tr style="background:#0a0a0a"><td style="padding:10px;font-size:13px;color:#fff;font-weight:700">ESTIMATED TOTAL <span style="font-size:10px;font-weight:400;opacity:0.7">(not including TBD charges)</span></td><td style="padding:10px;font-size:16px;color:#fff;font-weight:700;text-align:right">${fmt(editableTotal())}</td></tr></table>
+${form.value?`<div style="font-size:11px;color:#888;margin-bottom:12px">Declared carnet value: <strong>$${(parseFloat(form.value)||0).toLocaleString()} USD</strong></div>`:""}
 ${form.notes?`<div style="background:#fffbeb;border-left:3px solid #d97706;padding:10px 14px;border-radius:0 4px 4px 0;margin-bottom:14px;font-size:12px"><strong>Notes: </strong>${form.notes}</div>`:""}
-<div style="border-top:0.5px solid #e0e0e0;padding-top:12px;font-size:10px;color:#aaa;line-height:1.7">This estimate does not include cargo insurance, special handling, accessorial charges, waiting time, or airline storage. Rates subject to change. Valid 30 days.</div>
+<div style="border-top:0.5px solid #e0e0e0;padding-top:12px;font-size:10px;color:#aaa;line-height:1.8">
+<strong style="color:#888;display:block;margin-bottom:4px">Cargo Disclosure:</strong>
+• Validity of this estimate is 7 days and is subject to change based on space and availability.<br>
+• Any claim MUST be filed within 7 days from the date the shipment is delivered.<br>
+• This estimate does not include cargo insurance, inside delivery, special handling, or accessorial charges.<br>
+• Final charges may be adjusted upon verification of pieces, weight, dimensions, and declared value.<br>
+• If shipping Dangerous Goods and/or restricted materials, please advise in advance as special handling and pricing will apply.<br>
+• If Lithium-Ion batteries are included, additional charges may apply.
+</div>
 </body></html>`;
   const w=window.open("","_blank","width=820,height=950");
   if(w){w.document.write(html);w.document.close();}
@@ -367,34 +383,32 @@ ${form.notes?`<div style="background:#fffbeb;border-left:3px solid #d97706;paddi
 function copyQuote(form){
   if(!form)return;
   const wi=getWt(form.weightKg,form.dimPieces||[]);
-  let t=`* * * ATA CARNET ${form.direction?.includes("import")?"IMPORT":"RETURN"} CLEARANCE & DELIVERY * * *\n`;
+  const dir=form.direction?.includes("import")?"IMPORT":form.direction==="export"?"EXPORT":"RETURN";
+  const outport=isOutport(form.destAirport);
+  let t=`* * * ATA CARNET ${dir}${outport?" (OUTPORT)":""} CLEARANCE & DELIVERY * * *\n`;
   if(form.carnetNumber)t+=`ATA CARNET # ${form.carnetNumber}\n`;
   if(form.client)t+=`Client: ${form.client}\n`;
   if(form.production)t+=`Production: ${form.production}\n`;
-  if(form.pieces)t+=`${form.pieces} PCS / ${fmtKg(wi.chargeable||0)} KGS CHARGEABLE WT / VALUE $${(parseFloat(form.value)||0).toLocaleString()} USD\n`;
+  if(form.pieces)t+=`${form.pieces} PCS / ${fmtKg(wi.chargeable||0)} KGS CHARGEABLE WT (Actual: ${fmtKg(wi.actual||0)} / Dim: ${fmtKg(wi.dimWt||0)}) / VALUE $${(parseFloat(form.value)||0).toLocaleString()} USD\n`;
   if(form.commodity)t+=`Commodity: ${form.commodity}\n`;
   t+=`Origin: ${originName(form.origin)} → ${airportName(form.destAirport)}\n\n`;
-  editableLines.forEach(l=>{t+=`${l.label}\t${l.note==="Free"?"Free":fmt(l.amount)}\n`;});
+  editableLines.forEach(l=>{t+=`${l.label}\t${l.note==="Free"?"Free":l.note==="TBD"?"TBD":fmt(l.amount)}\n`;});
   editableTbd.forEach(tb=>{t+=`${tb}\tTBD\n`;});
-  t+=`\nESTIMATED TOTAL\t${fmt(editableTotal())}\n`;
+  t+=`\nESTIMATED TOTAL (Not Including TBD Charges)\t${fmt(editableTotal())}\n`;
   if(form.notes)t+=`\nNotes: ${form.notes}\n`;
+  t+=`\nValidity of this estimate is 7 days and is subject to change.`;
   navigator.clipboard.writeText(t).then(()=>{
     const btn=document.getElementById("copy-btn");
     if(btn){btn.textContent="Copied!";setTimeout(()=>{btn.textContent="Copy quote"},2000);}
   });
 }
 
-// ── Global quote state ─────────────────────────────────────────────────
-let currentForm=null;
-
-// ── Tab switching ──────────────────────────────────────────────────────
 function switchTab(tab){
   document.querySelectorAll(".tab").forEach((t,i)=>t.classList.toggle("active",(i===0&&tab==="email")||(i===1&&tab==="manual")));
   document.getElementById("tab-email").style.display=tab==="email"?"block":"none";
   document.getElementById("tab-manual").style.display=tab==="manual"?"block":"none";
 }
 
-// ── Server status ──────────────────────────────────────────────────────
 let serverStatus="checking";
 function updateStatusBadge(){
   const el=document.getElementById("server-status");
@@ -408,9 +422,49 @@ function checkServer(){
 }
 setInterval(checkServer,15000);
 
+// ── Dimension section ──────────────────────────────────────────────────
+const dimStates={};
+function dimSectionHTML(dimPieces,prefix){
+  let rows=dimPieces.map((p,i)=>`
+    <div class="dim-row-grid">
+      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 60" value="${p.l||""}" oninput="updateDim('${prefix}',${i},'l',this.value)"></div>
+      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 40" value="${p.w||""}" oninput="updateDim('${prefix}',${i},'w',this.value)"></div>
+      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 35" value="${p.h||""}" oninput="updateDim('${prefix}',${i},'h',this.value)"></div>
+      <div class="field" style="margin:0"><input type="number" min="1" placeholder="1" value="${p.qty||1}" oninput="updateDim('${prefix}',${i},'qty',this.value)"></div>
+      <button class="btn-remove" onclick="removeDim('${prefix}',${i})">×</button>
+    </div>`).join("");
+  const wi=getWt(0,dimPieces);
+  return `<div><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:8px">Cargo dimensions (cm)</label>
+    <div class="dim-header"><span class="dim-col-label">Length</span><span class="dim-col-label">Width</span><span class="dim-col-label">Height</span><span class="dim-col-label">Qty</span><span></span></div>
+    <div id="${prefix}-dim-rows">${rows}</div>
+    <button class="btn-add-dim" onclick="addDim('${prefix}')">+ Add piece</button>
+    <p class="dim-note">Divisor: 6,000 cm³/kg (IATA air freight standard)</p>
+  </div>`;
+}
+function initDimState(prefix,pieces){dimStates[prefix]=[...pieces.map(p=>({...p}))]}
+function addDim(prefix){if(!dimStates[prefix])dimStates[prefix]=[];dimStates[prefix].push({l:"",w:"",h:"",qty:"1"});syncDimState(prefix);rerenderDimRows(prefix)}
+function removeDim(prefix,i){if(!dimStates[prefix])return;dimStates[prefix].splice(i,1);syncDimState(prefix);rerenderDimRows(prefix)}
+function updateDim(prefix,i,k,v){if(!dimStates[prefix]||!dimStates[prefix][i])return;dimStates[prefix][i][k]=v;syncDimState(prefix)}
+function syncDimState(prefix){
+  if(prefix==="manual")manualForm.dimPieces=[...dimStates[prefix]];
+  else if(prefix==="email-edit"&&emailState.extracted)emailState.extracted.dimPieces=[...dimStates[prefix]];
+}
+function rerenderDimRows(prefix){
+  const wrap=document.getElementById(prefix+"-dim-rows");
+  if(!wrap)return;
+  wrap.innerHTML=(dimStates[prefix]||[]).map((p,i)=>`
+    <div class="dim-row-grid">
+      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 60" value="${p.l||""}" oninput="updateDim('${prefix}',${i},'l',this.value)"></div>
+      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 40" value="${p.w||""}" oninput="updateDim('${prefix}',${i},'w',this.value)"></div>
+      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 35" value="${p.h||""}" oninput="updateDim('${prefix}',${i},'h',this.value)"></div>
+      <div class="field" style="margin:0"><input type="number" min="1" placeholder="1" value="${p.qty||1}" oninput="updateDim('${prefix}',${i},'qty',this.value)"></div>
+      <button class="btn-remove" onclick="removeDim('${prefix}',${i})">×</button>
+    </div>`).join("");
+}
+
 // ── Email agent ────────────────────────────────────────────────────────
 let emailState={email:"",status:"idle",extracted:null,result:null,error:"",editing:false};
-const EXAMPLE=`Hi team,\n\nNeed a quote for Aura Lens — ATA Carnet return from Mexico City (MEX) to LAX. Carnet # US42-2480245. 6 cases, actual weight 89 kgs, each case is 45×35×30 cm. Declared value $20,160 USD. Lift gate needed, delivery to Hawk Anamorphic about 15 miles from LAX.\n\nThanks`;
+const EXAMPLE=`Hi team,\n\nWe need a shipping estimate for a Bryck Mini from our San Jose office (1735 N 1st Street, Suite 110, San Jose, CA 95112) to Tokyo, Japan.\n\nItem: Bryck Mini\nWeight: 23 lbs\nDimensions: 18 x 12 x 8 inches\nDeclared value: $399,000 USD\nPurpose: POC/demo — temporary export from US via ATA Carnet\n\nWe need to deliver before June 8th.\n\nThanks,\nBharat`;
 
 function renderEmail(){
   const c=document.getElementById("tab-email");
@@ -432,9 +486,9 @@ function renderEmail(){
       <div class="grid-2">
         <div class="field"><label>ATA Carnet #</label><input value="${ex.carnetNumber||""}" oninput="emailState.extracted.carnetNumber=this.value"></div>
         <div class="field"><label>Direction</label><select onchange="emailState.extracted.direction=this.value">
-          <option value="import" ${ex.direction==="import"?"selected":""}>Import</option>
-          <option value="import_outport" ${ex.direction==="import_outport"?"selected":""}>Import via outport</option>
-          <option value="return" ${ex.direction==="return"?"selected":""}>Return</option>
+          <option value="import" ${ex.direction==="import"?"selected":""}>Import (inbound)</option>
+          <option value="return" ${ex.direction==="return"?"selected":""}>Return (outbound)</option>
+          <option value="export" ${ex.direction==="export"?"selected":""}>Export (one-way out)</option>
         </select></div>
       </div>
       <div class="field"><label>Commodity</label><input value="${ex.commodity||""}" oninput="emailState.extracted.commodity=this.value"></div>
@@ -448,7 +502,7 @@ function renderEmail(){
         <div class="field"><label>Origin</label><select onchange="emailState.extracted.origin=this.value">${ORIGINS.map(r=>`<option value="${r.k}" ${ex.origin===r.k?"selected":""}>${r.label}</option>`).join("")}</select></div>
         <div class="field"><label>Destination airport</label><select onchange="emailState.extracted.destAirport=this.value">${AIRPORTS.map(a=>`<option value="${a.k}" ${ex.destAirport===a.k?"selected":""}>${a.label}</option>`).join("")}</select></div>
       </div>
-      <div class="field"><label>Delivery distance (miles)</label><input type="number" value="${ex.deliveryMiles||20}" oninput="emailState.extracted.deliveryMiles=this.value"></div>
+      <div class="field"><label>Delivery distance (miles from airport)</label><input type="number" value="${ex.deliveryMiles||20}" oninput="emailState.extracted.deliveryMiles=this.value"></div>
       <div class="btn-row">
         <button class="btn" onclick="emailState.editing=false;applyEmailEdit()">← Back to quote</button>
         <button class="btn btn-primary" onclick="applyEmailEdit()">Apply changes →</button>
@@ -461,10 +515,10 @@ function renderEmail(){
     <span class="status-badge status-${serverStatus}" id="server-status"><span class="status-dot"></span>${serverStatus==="online"?"Railway server online":serverStatus==="offline"?"Railway server offline":"Checking server…"}</span>
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em">Paste the employee email</label>
+        <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em">Paste the client email</label>
         <button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('email-input').value=EXAMPLE;emailState.email=EXAMPLE">Load example ↗</button>
       </div>
-      <textarea id="email-input" style="width:100%;min-height:160px;resize:vertical;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius);padding:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;line-height:1.6" placeholder="Include origin, destination, pieces, weight, dimensions, and declared value…" oninput="emailState.email=this.value">${s.email}</textarea>
+      <textarea id="email-input" style="width:100%;min-height:160px;resize:vertical;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius);padding:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;line-height:1.6" placeholder="Paste the client or employee email here…" oninput="emailState.email=this.value">${s.email}</textarea>
       ${s.error?`<div class="alert alert-error" style="margin-top:8px">${s.error}</div>`:""}
       <div class="btn-row">
         <button class="btn btn-primary" id="parse-btn" onclick="parseEmail()" ${s.status==="loading"?"disabled":""}>
@@ -472,7 +526,7 @@ function renderEmail(){
         </button>
       </div>
     </div>
-    <div class="info-box"><strong>How it works</strong>Paste any email with shipment details — the AI reads it, extracts every field, calculates chargeable weight, and builds the billing schedule. You can then edit any line item before exporting the PDF.</div>`;
+    <div class="info-box"><strong>How it works</strong>Paste any client or employee email — the AI extracts shipment details including dimensions, converts inches to cm automatically, calculates chargeable weight using the IATA standard, and builds the billing schedule using Film Logic's official fee rates. Review and edit any line before exporting.</div>`;
 }
 
 function resetEmail(){emailState={email:"",status:"idle",extracted:null,result:null,error:"",editing:false};renderEmail();}
@@ -509,18 +563,14 @@ async function parseEmail(){
 
 // ── Manual tab ─────────────────────────────────────────────────────────
 let manualStep=1;
-let manualForm={client:"",production:"",carnetNumber:"",origin:"europe",destAirport:"lax",pieces:"",weightKg:"",value:"",commodity:"",deliveryMiles:20,hasLiftGate:false,hasOvertime:false,hasSpecialMessenger:false,hasAirlineRecovery:false,includeCarnetIssuance:false,hasExpediteCarnet:false,direction:"import",notes:"",dimPieces:[{l:"",w:"",h:"",qty:"1"}]};
+let manualForm={client:"",production:"",carnetNumber:"",origin:"europe",destAirport:"lax",pieces:"",weightKg:"",value:"",commodity:"",deliveryMiles:20,hasLiftGate:false,hasOvertime:false,hasSpecialMessenger:false,hasAirlineRecovery:false,includeCarnetIssuance:false,hasExpediteCarnet:false,vehicleType:"",direction:"import",notes:"",dimPieces:[{l:"",w:"",h:"",qty:"1"}]};
 let manualResult=null;
 
 function renderManual(){
   const c=document.getElementById("tab-manual");
   if(!c)return;
   const f=manualForm;
-  if(manualResult){
-    currentForm=manualForm;
-    c.innerHTML=quoteHTML(manualResult,manualForm,"resetManual()","editManual()");
-    return;
-  }
+  if(manualResult){currentForm=manualForm;c.innerHTML=quoteHTML(manualResult,manualForm,"resetManual()","editManual()");return;}
   const stepBar=`<div class="step-bar">
     <div class="step-item"><div class="step-dot ${manualStep===1?"active":manualStep>1?"done":""}">1</div><span class="step-label ${manualStep===1?"active":""}">Job details</span></div>
     <div class="step-line"></div>
@@ -538,22 +588,28 @@ function renderManual(){
         <div class="field"><label>ATA Carnet #</label><input placeholder="e.g. US42-2480084" value="${f.carnetNumber}" oninput="manualForm.carnetNumber=this.value"></div>
         <div class="field"><label>Direction</label><select onchange="manualForm.direction=this.value">
           <option value="import" ${f.direction==="import"?"selected":""}>Import (inbound)</option>
-          <option value="import_outport" ${f.direction==="import_outport"?"selected":""}>Import via outport</option>
           <option value="return" ${f.direction==="return"?"selected":""}>Return (outbound)</option>
+          <option value="export" ${f.direction==="export"?"selected":""}>Export (one-way out)</option>
         </select></div>
       </div>
       <div class="field"><label>Commodity</label><input placeholder="e.g. Camera lenses, film props, wardrobe" value="${f.commodity}" oninput="manualForm.commodity=this.value"></div>
       <div class="grid-2">
         <div class="field"><label>No. of pieces</label><input type="number" min="1" placeholder="e.g. 6" value="${f.pieces}" oninput="manualForm.pieces=this.value"></div>
-        <div class="field"><label>Declared value (USD)</label><input type="number" min="0" placeholder="e.g. 24960" value="${f.value}" oninput="manualForm.value=this.value"></div>
+        <div class="field"><label>Declared value (USD)</label><input type="number" min="0" placeholder="e.g. 399000" value="${f.value}" oninput="manualForm.value=this.value"></div>
       </div>
       <div class="divider"></div>
       <div class="field"><label>Actual gross weight (KGS)</label><input type="number" min="0" placeholder="e.g. 89" value="${f.weightKg}" oninput="manualForm.weightKg=this.value"></div>
       ${dimSectionHTML(f.dimPieces,"manual")}
       <div class="divider"></div>
       <label class="checkbox-row"><input type="checkbox" ${f.includeCarnetIssuance?"checked":""} onchange="manualForm.includeCarnetIssuance=this.checked;renderManual()"> Add US Council issuance, bond & closing fees</label>
-      ${f.includeCarnetIssuance?`<label class="checkbox-row" style="padding-left:20px"><input type="checkbox" ${f.hasExpediteCarnet?"checked":""} onchange="manualForm.hasExpediteCarnet=this.checked"> Rush / expedite (+$250)</label>`:""}
-      <div class="field" style="margin-top:10px"><label>Notes</label><textarea placeholder="Special instructions…" style="min-height:48px;resize:vertical" oninput="manualForm.notes=this.value">${f.notes}</textarea></div>
+      ${f.includeCarnetIssuance?`
+        <label class="checkbox-row" style="padding-left:20px"><input type="checkbox" ${f.hasExpediteCarnet?"checked":""} onchange="manualForm.hasExpediteCarnet=this.checked"> Rush / expedite (+$250)</label>
+        <div class="field" style="margin-top:8px"><label>Cargo type (affects bond calculation)</label><select onchange="manualForm.vehicleType=this.value">
+          <option value="" ${!f.vehicleType?"selected":""}>General commodity (40% × 1.5%)</option>
+          <option value="corp" ${f.vehicleType==="corp"?"selected":""}>Vehicle – Corporation (100% × 1.5%)</option>
+          <option value="individual" ${f.vehicleType==="individual"?"selected":""}>Vehicle – Individual (150% × 1.5%)</option>
+        </select></div>`:""}
+      <div class="field" style="margin-top:10px"><label>Notes</label><textarea placeholder="Special instructions, pickup address, delivery address…" style="min-height:48px;resize:vertical" oninput="manualForm.notes=this.value">${f.notes}</textarea></div>
       <div class="btn-row"><button class="btn btn-primary" onclick="manualStep=2;renderManual()">Next: shipment →</button></div>
     </div>`;
     initDimState("manual",f.dimPieces);
@@ -561,9 +617,10 @@ function renderManual(){
     c.innerHTML=stepBar+`<div class="card">
       <div class="field"><label>Origin region</label><select onchange="manualForm.origin=this.value">${ORIGINS.map(r=>`<option value="${r.k}" ${f.origin===r.k?"selected":""}>${r.label}</option>`).join("")}</select></div>
       <div class="grid-2">
-        <div class="field"><label>US destination airport</label><select onchange="manualForm.destAirport=this.value">${AIRPORTS.map(a=>`<option value="${a.k}" ${f.destAirport===a.k?"selected":""}>${a.label}</option>`).join("")}</select></div>
+        <div class="field"><label>US destination airport</label><select onchange="manualForm.destAirport=this.value;renderManual()">${AIRPORTS.map(a=>`<option value="${a.k}" ${f.destAirport===a.k?"selected":""}>${a.label}${OUTPORTS.includes(a.k)?" (outport)":""}</option>`).join("")}</select></div>
         <div class="field"><label>Delivery distance (miles)</label><input type="number" min="0" value="${f.deliveryMiles}" oninput="manualForm.deliveryMiles=this.value"></div>
       </div>
+      ${isOutport(f.destAirport)?`<div class="alert alert-info" style="margin-bottom:12px;font-size:12px">Outport detected — a $150.00 outport fee and $125.00 messenger fee will be applied.</div>`:""}
       <div class="divider"></div>
       <div style="margin-bottom:6px"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em">Additional services</label></div>
       <div class="checkbox-grid">
@@ -586,50 +643,9 @@ function generateManualQuote(){
   manualResult=result;
   renderManual();
 }
-
-function resetManual(){manualStep=1;manualResult=null;manualForm={client:"",production:"",carnetNumber:"",origin:"europe",destAirport:"lax",pieces:"",weightKg:"",value:"",commodity:"",deliveryMiles:20,hasLiftGate:false,hasOvertime:false,hasSpecialMessenger:false,hasAirlineRecovery:false,includeCarnetIssuance:false,hasExpediteCarnet:false,direction:"import",notes:"",dimPieces:[{l:"",w:"",h:"",qty:"1"}]};renderManual();}
+function resetManual(){manualStep=1;manualResult=null;manualForm={client:"",production:"",carnetNumber:"",origin:"europe",destAirport:"lax",pieces:"",weightKg:"",value:"",commodity:"",deliveryMiles:20,hasLiftGate:false,hasOvertime:false,hasSpecialMessenger:false,hasAirlineRecovery:false,includeCarnetIssuance:false,hasExpediteCarnet:false,vehicleType:"",direction:"import",notes:"",dimPieces:[{l:"",w:"",h:"",qty:"1"}]};renderManual();}
 function editManual(){manualResult=null;manualStep=1;renderManual();}
 
-// ── Dimension state ────────────────────────────────────────────────────
-const dimStates={};
-function dimSectionHTML(dimPieces,prefix){
-  let rows=dimPieces.map((p,i)=>`
-    <div class="dim-row-grid">
-      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 60" value="${p.l||""}" oninput="updateDim('${prefix}',${i},'l',this.value)"></div>
-      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 40" value="${p.w||""}" oninput="updateDim('${prefix}',${i},'w',this.value)"></div>
-      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 35" value="${p.h||""}" oninput="updateDim('${prefix}',${i},'h',this.value)"></div>
-      <div class="field" style="margin:0"><input type="number" min="1" placeholder="1" value="${p.qty||1}" oninput="updateDim('${prefix}',${i},'qty',this.value)"></div>
-      <button class="btn-remove" onclick="removeDim('${prefix}',${i})">×</button>
-    </div>`).join("");
-  return `<div><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:8px">Cargo dimensions (cm)</label>
-    <div class="dim-header"><span class="dim-col-label">Length</span><span class="dim-col-label">Width</span><span class="dim-col-label">Height</span><span class="dim-col-label">Qty</span><span></span></div>
-    <div id="${prefix}-dim-rows">${rows}</div>
-    <button class="btn-add-dim" onclick="addDim('${prefix}')">+ Add piece</button>
-    <p class="dim-note">Divisor: 6,000 cm³/kg (IATA standard)</p>
-  </div>`;
-}
-function initDimState(prefix,pieces){dimStates[prefix]=[...pieces.map(p=>({...p}))]}
-function addDim(prefix){if(!dimStates[prefix])dimStates[prefix]=[];dimStates[prefix].push({l:"",w:"",h:"",qty:"1"});syncDimState(prefix);rerenderDimRows(prefix)}
-function removeDim(prefix,i){if(!dimStates[prefix])return;dimStates[prefix].splice(i,1);syncDimState(prefix);rerenderDimRows(prefix)}
-function updateDim(prefix,i,k,v){if(!dimStates[prefix]||!dimStates[prefix][i])return;dimStates[prefix][i][k]=v;syncDimState(prefix)}
-function syncDimState(prefix){
-  if(prefix==="manual")manualForm.dimPieces=[...dimStates[prefix]];
-  else if(prefix==="email-edit"&&emailState.extracted)emailState.extracted.dimPieces=[...dimStates[prefix]];
-}
-function rerenderDimRows(prefix){
-  const wrap=document.getElementById(prefix+"-dim-rows");
-  if(!wrap)return;
-  wrap.innerHTML=(dimStates[prefix]||[]).map((p,i)=>`
-    <div class="dim-row-grid">
-      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 60" value="${p.l||""}" oninput="updateDim('${prefix}',${i},'l',this.value)"></div>
-      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 40" value="${p.w||""}" oninput="updateDim('${prefix}',${i},'w',this.value)"></div>
-      <div class="field" style="margin:0"><input type="number" min="0" placeholder="e.g. 35" value="${p.h||""}" oninput="updateDim('${prefix}',${i},'h',this.value)"></div>
-      <div class="field" style="margin:0"><input type="number" min="1" placeholder="1" value="${p.qty||1}" oninput="updateDim('${prefix}',${i},'qty',this.value)"></div>
-      <button class="btn-remove" onclick="removeDim('${prefix}',${i})">×</button>
-    </div>`).join("");
-}
-
-// ── Init ───────────────────────────────────────────────────────────────
 checkServer();
 renderEmail();
 renderManual();
