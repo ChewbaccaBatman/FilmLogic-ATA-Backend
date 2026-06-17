@@ -102,12 +102,23 @@ Return this exact JSON shape — extract what you can from the email, leave unkn
 }
 
 FIELD RULES:
-- origin: europe | canada | mexico | asia | aus_nz | me | latam
-  (UK/Europe=europe, Canada=canada, Mexico=mexico, Japan/Thailand/China/Korea/Asia=asia,
-   Australia/NZ=aus_nz, Dubai/UAE/Abu Dhabi=me, South America=latam)
-- destAirport: lax | jfk | ewr | sfo | ord | atl | bos | mia | las | iad
-  (Los Angeles/Burbank=lax, New York=jfk, Newark=ewr, San Francisco/Bay Area/San Jose=sfo,
-   Chicago=ord, Atlanta=atl, Boston=bos, Miami=mia, Las Vegas=las, Washington DC=iad)
+- origin: europe | canada | mexico | asia | aus_nz | me | latam | us
+  (UK/Europe/Spain/France/Germany/Italy/Netherlands=europe,
+   Canada/YVR/YYZ/YYC=canada, Mexico/MEX=mexico,
+   Japan/Thailand/China/Korea/Singapore/Philippines/India=asia,
+   Australia/New Zealand=aus_nz, Dubai/UAE/Abu Dhabi/Saudi Arabia/Qatar=me,
+   South America/Latin America/Brazil/Colombia/Argentina/Chile=latam,
+   United States (if shipment originates domestically within US)=us)
+- destAirport: use IATA airport code in lowercase. Common ones:
+  US West: lax (Los Angeles/Burbank), sfo (San Francisco/Bay Area/San Jose), sea (Seattle),
+    san (San Diego), pdx (Portland), las (Las Vegas), phx (Phoenix), hnl (Honolulu), anc (Anchorage)
+  US East: jfk (New York/Manhattan/Brooklyn), ewr (Newark), bos (Boston), iad (Washington DC),
+    phl (Philadelphia), mia (Miami), mco (Orlando), tpa (Tampa), clt (Charlotte)
+  US Central/South: ord (Chicago), atl (Atlanta), dfw (Dallas), hou (Houston),
+    den (Denver), msp (Minneapolis), dtw (Detroit), bna (Nashville), slc (Salt Lake City), aus (Austin)
+  Canada: yvr (Vancouver/YVR), yyz (Toronto), yyc (Calgary), yul (Montreal)
+  Mexico: mex (Mexico City/MEX), nlu (Mexico City Santa Lucia), gdl (Guadalajara), mty (Monterrey), tij (Tijuana)
+  If airport is unknown or international destination: use "other"
 - direction: import | import_outport | return | export
 - isOutport: true if destination airport is NOT LAX or LGB
 - dimPieces: extract dimensions. If inches mentioned, set unit="in" and I will convert
