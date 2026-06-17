@@ -129,60 +129,199 @@
 const API_BASE="https://filmlogic-ata-backend-production.up.railway.app";
 const DIM_DIV=6000;
 
-// ── Origin regions (comprehensive) ───────────────────────────────────
+// ── All airports (origin + destination, global) ───────────────────────
+const ALL_AIRPORTS=[
+  // ── United States ──────────────────────────────────────────────────
+  {label:"LAX – Los Angeles, USA",k:"lax",region:"us",delivery:125},
+  {label:"LGB – Long Beach, USA",k:"lgb",region:"us",delivery:115},
+  {label:"JFK – New York (Kennedy), USA",k:"jfk",region:"us",delivery:250},
+  {label:"EWR – Newark, USA",k:"ewr",region:"us",delivery:175},
+  {label:"SFO – San Francisco, USA",k:"sfo",region:"us",delivery:195},
+  {label:"ORD – Chicago (O'Hare), USA",k:"ord",region:"us",delivery:125},
+  {label:"MDW – Chicago (Midway), USA",k:"mdw",region:"us",delivery:125},
+  {label:"ATL – Atlanta, USA",k:"atl",region:"us",delivery:115},
+  {label:"BOS – Boston, USA",k:"bos",region:"us",delivery:350},
+  {label:"MIA – Miami, USA",k:"mia",region:"us",delivery:195},
+  {label:"FLL – Fort Lauderdale, USA",k:"fll",region:"us",delivery:195},
+  {label:"LAS – Las Vegas, USA",k:"las",region:"us",delivery:295},
+  {label:"IAD – Washington D.C. (Dulles), USA",k:"iad",region:"us",delivery:250},
+  {label:"DCA – Washington D.C. (Reagan), USA",k:"dca",region:"us",delivery:250},
+  {label:"DFW – Dallas/Fort Worth, USA",k:"dfw",region:"us",delivery:150},
+  {label:"DAL – Dallas (Love Field), USA",k:"dal",region:"us",delivery:150},
+  {label:"DEN – Denver, USA",k:"den",region:"us",delivery:150},
+  {label:"SEA – Seattle, USA",k:"sea",region:"us",delivery:195},
+  {label:"PDX – Portland, USA",k:"pdx",region:"us",delivery:195},
+  {label:"PHX – Phoenix, USA",k:"phx",region:"us",delivery:125},
+  {label:"MSP – Minneapolis, USA",k:"msp",region:"us",delivery:150},
+  {label:"DTW – Detroit, USA",k:"dtw",region:"us",delivery:175},
+  {label:"PHL – Philadelphia, USA",k:"phl",region:"us",delivery:195},
+  {label:"CLT – Charlotte, USA",k:"clt",region:"us",delivery:150},
+  {label:"IAH – Houston (Intercontinental), USA",k:"iah",region:"us",delivery:175},
+  {label:"HOU – Houston (Hobby), USA",k:"hou",region:"us",delivery:175},
+  {label:"SAN – San Diego, USA",k:"san",region:"us",delivery:125},
+  {label:"SLC – Salt Lake City, USA",k:"slc",region:"us",delivery:175},
+  {label:"AUS – Austin, USA",k:"aus_tx",region:"us",delivery:175},
+  {label:"BNA – Nashville, USA",k:"bna",region:"us",delivery:150},
+  {label:"MCO – Orlando, USA",k:"mco",region:"us",delivery:150},
+  {label:"TPA – Tampa, USA",k:"tpa",region:"us",delivery:150},
+  {label:"HNL – Honolulu, USA",k:"hnl",region:"us",delivery:350},
+  {label:"OGG – Maui, USA",k:"ogg",region:"us",delivery:350},
+  {label:"BUR – Burbank, USA",k:"bur",region:"us",delivery:115},
+  {label:"ONT – Ontario, USA",k:"ont",region:"us",delivery:135},
+  {label:"SNA – Orange County, USA",k:"sna",region:"us",delivery:135},
+  {label:"SMF – Sacramento, USA",k:"smf",region:"us",delivery:225},
+  {label:"RNO – Reno, USA",k:"rno",region:"us",delivery:250},
+  {label:"ABQ – Albuquerque, USA",k:"abq",region:"us",delivery:200},
+  {label:"TUL – Tulsa, USA",k:"tul",region:"us",delivery:200},
+  {label:"OKC – Oklahoma City, USA",k:"okc",region:"us",delivery:200},
+  {label:"MCI – Kansas City, USA",k:"mci",region:"us",delivery:175},
+  {label:"STL – St. Louis, USA",k:"stl",region:"us",delivery:175},
+  {label:"CVG – Cincinnati, USA",k:"cvg",region:"us",delivery:175},
+  {label:"CMH – Columbus, USA",k:"cmh",region:"us",delivery:175},
+  {label:"CLE – Cleveland, USA",k:"cle",region:"us",delivery:175},
+  {label:"PIT – Pittsburgh, USA",k:"pit",region:"us",delivery:200},
+  {label:"BDL – Hartford, USA",k:"bdl",region:"us",delivery:300},
+  {label:"RDU – Raleigh-Durham, USA",k:"rdu",region:"us",delivery:175},
+  {label:"MSY – New Orleans, USA",k:"msy",region:"us",delivery:175},
+  {label:"MEM – Memphis, USA",k:"mem",region:"us",delivery:175},
+  {label:"IND – Indianapolis, USA",k:"ind",region:"us",delivery:175},
+  {label:"MKE – Milwaukee, USA",k:"mke",region:"us",delivery:150},
+  {label:"ANC – Anchorage, USA",k:"anc",region:"us",delivery:400},
+  // ── Canada ────────────────────────────────────────────────────────
+  {label:"YVR – Vancouver, Canada",k:"yvr",region:"canada",delivery:225},
+  {label:"YYZ – Toronto, Canada",k:"yyz",region:"canada",delivery:275},
+  {label:"YYC – Calgary, Canada",k:"yyc",region:"canada",delivery:275},
+  {label:"YEG – Edmonton, Canada",k:"yeg",region:"canada",delivery:300},
+  {label:"YUL – Montreal, Canada",k:"yul",region:"canada",delivery:300},
+  {label:"YOW – Ottawa, Canada",k:"yow",region:"canada",delivery:300},
+  {label:"YHZ – Halifax, Canada",k:"yhz",region:"canada",delivery:350},
+  // ── Mexico ────────────────────────────────────────────────────────
+  {label:"MEX – Mexico City, Mexico",k:"mex",region:"mexico",delivery:300},
+  {label:"NLU – Santa Lucia, Mexico",k:"nlu",region:"mexico",delivery:300},
+  {label:"GDL – Guadalajara, Mexico",k:"gdl",region:"mexico",delivery:350},
+  {label:"MTY – Monterrey, Mexico",k:"mty",region:"mexico",delivery:350},
+  {label:"CUN – Cancun, Mexico",k:"cun",region:"mexico",delivery:350},
+  {label:"TIJ – Tijuana, Mexico",k:"tij",region:"mexico",delivery:200},
+  // ── UK & Ireland ──────────────────────────────────────────────────
+  {label:"LHR – London Heathrow, UK",k:"lhr",region:"europe",delivery:350},
+  {label:"LGW – London Gatwick, UK",k:"lgw",region:"europe",delivery:350},
+  {label:"STN – London Stansted, UK",k:"stn",region:"europe",delivery:375},
+  {label:"MAN – Manchester, UK",k:"man",region:"europe",delivery:375},
+  {label:"EDI – Edinburgh, UK",k:"edi",region:"europe",delivery:400},
+  {label:"DUB – Dublin, Ireland",k:"dub",region:"europe",delivery:375},
+  // ── Western Europe ────────────────────────────────────────────────
+  {label:"CDG – Paris (Charles de Gaulle), France",k:"cdg",region:"europe",delivery:350},
+  {label:"ORY – Paris (Orly), France",k:"ory",region:"europe",delivery:350},
+  {label:"AMS – Amsterdam, Netherlands",k:"ams",region:"europe",delivery:350},
+  {label:"FRA – Frankfurt, Germany",k:"fra",region:"europe",delivery:350},
+  {label:"MUC – Munich, Germany",k:"muc",region:"europe",delivery:375},
+  {label:"BER – Berlin, Germany",k:"ber",region:"europe",delivery:375},
+  {label:"MAD – Madrid, Spain",k:"mad",region:"europe",delivery:375},
+  {label:"BCN – Barcelona, Spain",k:"bcn",region:"europe",delivery:375},
+  {label:"FCO – Rome (Fiumicino), Italy",k:"fco",region:"europe",delivery:375},
+  {label:"MXP – Milan (Malpensa), Italy",k:"mxp",region:"europe",delivery:375},
+  {label:"VCE – Venice, Italy",k:"vce",region:"europe",delivery:400},
+  {label:"ZRH – Zurich, Switzerland",k:"zrh",region:"europe",delivery:375},
+  {label:"GVA – Geneva, Switzerland",k:"gva",region:"europe",delivery:375},
+  {label:"BRU – Brussels, Belgium",k:"bru",region:"europe",delivery:350},
+  {label:"CPH – Copenhagen, Denmark",k:"cph",region:"europe",delivery:375},
+  {label:"ARN – Stockholm, Sweden",k:"arn",region:"europe",delivery:375},
+  {label:"OSL – Oslo, Norway",k:"osl",region:"europe",delivery:400},
+  {label:"HEL – Helsinki, Finland",k:"hel",region:"europe",delivery:400},
+  {label:"LIS – Lisbon, Portugal",k:"lis",region:"europe",delivery:375},
+  {label:"VIE – Vienna, Austria",k:"vie",region:"europe",delivery:375},
+  {label:"WAW – Warsaw, Poland",k:"waw",region:"europe",delivery:400},
+  {label:"PRG – Prague, Czech Republic",k:"prg",region:"europe",delivery:400},
+  {label:"BUD – Budapest, Hungary",k:"bud",region:"europe",delivery:400},
+  {label:"ATH – Athens, Greece",k:"ath",region:"europe",delivery:400},
+  // ── Asia Pacific ──────────────────────────────────────────────────
+  {label:"NRT – Tokyo (Narita), Japan",k:"nrt",region:"japan",delivery:450},
+  {label:"HND – Tokyo (Haneda), Japan",k:"hnd",region:"japan",delivery:450},
+  {label:"KIX – Osaka (Kansai), Japan",k:"kix",region:"japan",delivery:475},
+  {label:"ICN – Seoul (Incheon), Korea",k:"icn",region:"asia",delivery:450},
+  {label:"PEK – Beijing, China",k:"pek",region:"asia",delivery:475},
+  {label:"PVG – Shanghai (Pudong), China",k:"pvg",region:"asia",delivery:475},
+  {label:"HKG – Hong Kong",k:"hkg",region:"asia",delivery:450},
+  {label:"SIN – Singapore (Changi)",k:"sin",region:"asia",delivery:450},
+  {label:"BKK – Bangkok (Suvarnabhumi), Thailand",k:"bkk",region:"asia",delivery:450},
+  {label:"KUL – Kuala Lumpur, Malaysia",k:"kul",region:"asia",delivery:475},
+  {label:"CGK – Jakarta, Indonesia",k:"cgk",region:"asia",delivery:500},
+  {label:"MNL – Manila, Philippines",k:"mnl",region:"asia",delivery:475},
+  {label:"TPE – Taipei, Taiwan",k:"tpe",region:"asia",delivery:450},
+  // ── Australia & New Zealand ───────────────────────────────────────
+  {label:"SYD – Sydney, Australia",k:"syd",region:"aus",delivery:500},
+  {label:"MEL – Melbourne, Australia",k:"mel",region:"aus",delivery:500},
+  {label:"BNE – Brisbane, Australia",k:"bne",region:"aus",delivery:525},
+  {label:"PER – Perth, Australia",k:"per",region:"aus",delivery:550},
+  {label:"ADL – Adelaide, Australia",k:"adl",region:"aus",delivery:525},
+  {label:"AKL – Auckland, New Zealand",k:"akl",region:"nz",delivery:525},
+  {label:"CHC – Christchurch, New Zealand",k:"chc",region:"nz",delivery:550},
+  // ── Middle East ───────────────────────────────────────────────────
+  {label:"DXB – Dubai, UAE",k:"dxb",region:"me",delivery:475},
+  {label:"AUH – Abu Dhabi, UAE",k:"auh",region:"me",delivery:475},
+  {label:"DOH – Doha, Qatar",k:"doh",region:"me",delivery:475},
+  {label:"RUH – Riyadh, Saudi Arabia",k:"ruh",region:"me",delivery:500},
+  {label:"JED – Jeddah, Saudi Arabia",k:"jed",region:"me",delivery:500},
+  {label:"AMM – Amman, Jordan",k:"amm",region:"me",delivery:500},
+  {label:"TLV – Tel Aviv, Israel",k:"tlv",region:"me",delivery:475},
+  {label:"KWI – Kuwait City, Kuwait",k:"kwi",region:"me",delivery:500},
+  {label:"BAH – Bahrain",k:"bah",region:"me",delivery:500},
+  // ── India ─────────────────────────────────────────────────────────
+  {label:"BOM – Mumbai, India",k:"bom",region:"india",delivery:475},
+  {label:"DEL – Delhi, India",k:"del",region:"india",delivery:475},
+  {label:"BLR – Bangalore, India",k:"blr",region:"india",delivery:500},
+  {label:"MAA – Chennai, India",k:"maa",region:"india",delivery:500},
+  {label:"HYD – Hyderabad, India",k:"hyd",region:"india",delivery:500},
+  // ── Latin America / Caribbean ─────────────────────────────────────
+  {label:"GRU – São Paulo (Guarulhos), Brazil",k:"gru",region:"latam",delivery:475},
+  {label:"GIG – Rio de Janeiro, Brazil",k:"gig",region:"latam",delivery:475},
+  {label:"EZE – Buenos Aires, Argentina",k:"eze",region:"latam",delivery:500},
+  {label:"BOG – Bogotá, Colombia",k:"bog",region:"latam",delivery:475},
+  {label:"LIM – Lima, Peru",k:"lim",region:"latam",delivery:475},
+  {label:"SCL – Santiago, Chile",k:"scl",region:"latam",delivery:500},
+  {label:"UIO – Quito, Ecuador",k:"uio",region:"latam",delivery:500},
+  {label:"CCS – Caracas, Venezuela",k:"ccs",region:"latam",delivery:525},
+  {label:"PTY – Panama City, Panama",k:"pty",region:"latam",delivery:450},
+  {label:"GUA – Guatemala City, Guatemala",k:"gua",region:"latam",delivery:450},
+  {label:"SJO – San José, Costa Rica",k:"sjo",region:"latam",delivery:450},
+  {label:"MGA – Managua, Nicaragua",k:"mga",region:"latam",delivery:475},
+  {label:"SAL – San Salvador, El Salvador",k:"sal",region:"latam",delivery:475},
+  {label:"HAV – Havana, Cuba",k:"hav",region:"latam",delivery:500},
+  {label:"SJU – San Juan, Puerto Rico",k:"sju",region:"latam",delivery:200},
+  {label:"NAS – Nassau, Bahamas",k:"nas",region:"latam",delivery:300},
+  // ── Africa ────────────────────────────────────────────────────────
+  {label:"JNB – Johannesburg, South Africa",k:"jnb",region:"africa",delivery:550},
+  {label:"CPT – Cape Town, South Africa",k:"cpt",region:"africa",delivery:575},
+  {label:"CAI – Cairo, Egypt",k:"cai",region:"africa",delivery:500},
+  {label:"CMN – Casablanca, Morocco",k:"cmn",region:"africa",delivery:500},
+  {label:"NBO – Nairobi, Kenya",k:"nbo",region:"africa",delivery:550},
+  {label:"LOS – Lagos, Nigeria",k:"los",region:"africa",delivery:575},
+  {label:"ACC – Accra, Ghana",k:"acc",region:"africa",delivery:575},
+  {label:"ADD – Addis Ababa, Ethiopia",k:"add",region:"africa",delivery:575},
+  // ── Other ─────────────────────────────────────────────────────────
+  {label:"Other / Custom",k:"other",region:"other",delivery:300},
+];
+
+// For backwards compat keep AIRPORTS and ORIGINS as aliases
+const AIRPORTS=ALL_AIRPORTS;
 const ORIGINS=[
-  {label:"Europe (UK/Spain/France/Germany/Italy/France)",k:"europe"},
-  {label:"Canada (YVR Vancouver / YYZ Toronto / YYC Calgary)",k:"canada"},
-  {label:"Mexico (MEX Mexico City / NLU / GDL)",k:"mexico"},
-  {label:"Japan (NRT/HND Tokyo)",k:"japan"},
-  {label:"Asia – Other (Thailand/China/Korea/Singapore/HK)",k:"asia"},
-  {label:"Australia (SYD/MEL/BNE)",k:"aus"},
-  {label:"New Zealand (AKL/CHC)",k:"nz"},
-  {label:"Middle East (UAE/Dubai/Abu Dhabi/Qatar)",k:"me"},
-  {label:"Latin America / South America",k:"latam"},
+  {label:"United States",k:"us"},
+  {label:"Canada",k:"canada"},
+  {label:"Mexico",k:"mexico"},
+  {label:"UK & Ireland",k:"europe_uk"},
+  {label:"Western Europe",k:"europe"},
+  {label:"Japan",k:"japan"},
+  {label:"Asia (Korea/China/SE Asia/HK/Singapore)",k:"asia"},
+  {label:"Australia",k:"aus"},
+  {label:"New Zealand",k:"nz"},
+  {label:"Middle East (UAE/Qatar/Saudi/Israel)",k:"me"},
+  {label:"India",k:"india"},
+  {label:"Latin America / Caribbean",k:"latam"},
   {label:"Africa",k:"africa"},
-  {label:"India (BOM/DEL/BLR)",k:"india"},
   {label:"Other / Unknown",k:"other"},
 ];
 
-// ── US destination airports (comprehensive) ───────────────────────────
-const AIRPORTS=[
-  // Major hubs
-  {label:"LAX – Los Angeles",k:"lax"},
-  {label:"JFK – New York (Kennedy)",k:"jfk"},
-  {label:"EWR – Newark",k:"ewr"},
-  {label:"SFO – San Francisco",k:"sfo"},
-  {label:"ORD – Chicago (O'Hare)",k:"ord"},
-  {label:"ATL – Atlanta",k:"atl"},
-  {label:"BOS – Boston",k:"bos"},
-  {label:"MIA – Miami",k:"mia"},
-  {label:"LAS – Las Vegas",k:"las"},
-  {label:"IAD – Washington D.C. (Dulles)",k:"iad"},
-  {label:"DCA – Washington D.C. (Reagan)",k:"dca"},
-  {label:"DFW – Dallas/Fort Worth",k:"dfw"},
-  {label:"DEN – Denver",k:"den"},
-  {label:"SEA – Seattle",k:"sea"},
-  {label:"PDX – Portland",k:"pdx"},
-  {label:"PHX – Phoenix",k:"phx"},
-  {label:"MSP – Minneapolis",k:"msp"},
-  {label:"DTW – Detroit",k:"dtw"},
-  {label:"PHL – Philadelphia",k:"phl"},
-  {label:"CLT – Charlotte",k:"clt"},
-  {label:"HOU/IAH – Houston",k:"iah"},
-  {label:"SAN – San Diego",k:"san"},
-  {label:"SLC – Salt Lake City",k:"slc"},
-  {label:"AUS – Austin",k:"aus_tx"},
-  {label:"BNA – Nashville",k:"bna"},
-  {label:"MCO – Orlando",k:"mco"},
-  {label:"TPA – Tampa",k:"tpa"},
-  {label:"HNL – Honolulu",k:"hnl"},
-  // Non-US entry points Film Logic handles
-  {label:"YVR – Vancouver, Canada",k:"yvr"},
-  {label:"YYZ – Toronto, Canada",k:"yyz"},
-  {label:"Other / Custom",k:"other"},
-];
-
-const OUTPORTS_LAX_ONLY=["lax","lgb"]; // LAX/LGB = no outport fee
+const OUTPORTS_LAX_ONLY=["lax","lgb"];
 function isOutport(ap){return ap&&!OUTPORTS_LAX_ONLY.includes(ap)}
 
 function fmt(n){return Number(n||0).toLocaleString("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -192,43 +331,43 @@ function calcDimWt(pieces){return pieces.reduce((s,p)=>{const l=parseFloat(p.l)|
 function getWt(actualKg,dimPieces){const a=parseFloat(actualKg)||0,d=Math.round(calcDimWt(dimPieces||[])*10)/10;return{actual:a,dimWt:d,chargeable:Math.max(a,d),useDim:d>a}}
 function originName(k){
   if(!k)return "Unknown Origin";
+  // First try to find by airport region
+  const ap=ALL_AIRPORTS.find(a=>a.k===k);
+  if(ap){
+    const regionMap={us:"United States",canada:"Canada",mexico:"Mexico",europe:"Europe",japan:"Japan",asia:"Asia",aus:"Australia",nz:"New Zealand",me:"Middle East",india:"India",latam:"Latin America",africa:"Africa",other:"Other"};
+    return regionMap[ap.region]||ap.label.split("–")[0].trim();
+  }
   const found=ORIGINS.find(r=>r.k===k);
   if(found)return found.label.split(" (")[0];
   return k.toUpperCase();
 }
 function airportName(k){
   if(!k)return "Unknown Airport";
-  const found=AIRPORTS.find(a=>a.k===k);
-  if(found)return (found.label.split("–")[0]||found.label).trim();
+  const found=ALL_AIRPORTS.find(a=>a.k===k);
+  if(found){const parts=found.label.split("–");return parts[0].trim();}
   return k.toUpperCase();
 }
 
 // ── CORRECTED fee engine (from official Film Logic fee schedule) ──────
 function getDelivery(ap,mi){
-  const b={
-    lax:125,lgb:125,
-    jfk:250,ewr:175,
-    sfo:195,
-    ord:125,atl:115,
-    bos:350,mia:195,las:295,
-    iad:250,dca:250,
-    dfw:150,den:150,sea:195,pdx:195,
-    phx:125,msp:150,dtw:175,phl:195,
-    clt:150,iah:175,san:125,slc:175,
-    aus_tx:175,bna:150,mco:150,tpa:150,
-    hnl:350,yvr:225,yyz:275,
-    other:200
-  }[ap]||175;
+  const airport=ALL_AIRPORTS.find(a=>a.k===ap);
+  const b=airport?airport.delivery:200;
   return mi>50?Math.round(b+(mi-30)*1.8):b;
 }
 function getForeign(o,pcs,kg){
+  // o can be an origin region key OR an airport code
+  // Try to get region from airport first
+  const ap=ALL_AIRPORTS.find(a=>a.k===o);
+  const region=ap?ap.region:o;
   const b={
-    europe:450,canada:295,mexico:925,
+    us:0,
+    canada:295,mexico:925,
+    europe:450,europe_uk:450,
     japan:1160,asia:795,
     aus:1200,nz:1200,aus_nz:1200,
     me:1350,latam:1100,
     africa:1500,india:900,other:800
-  }[o]||600;
+  }[region]||600;
   return(pcs>10||kg>500)?Math.round(b*1.15):b;
 }
 function getCouncilFee(v){
@@ -481,6 +620,29 @@ function copyQuote(form){
   });
 }
 
+// ── Grouped airport select builder ────────────────────────────────────
+function buildAirportOptions(selected){
+  const groups={
+    "United States":ALL_AIRPORTS.filter(a=>a.region==="us"),
+    "Canada":ALL_AIRPORTS.filter(a=>a.region==="canada"),
+    "Mexico":ALL_AIRPORTS.filter(a=>a.region==="mexico"),
+    "UK & Ireland":ALL_AIRPORTS.filter(a=>a.region==="europe"&&["lhr","lgw","stn","man","edi","dub"].includes(a.k)),
+    "Western Europe":ALL_AIRPORTS.filter(a=>a.region==="europe"&&!["lhr","lgw","stn","man","edi","dub"].includes(a.k)),
+    "Japan":ALL_AIRPORTS.filter(a=>a.region==="japan"),
+    "Asia":ALL_AIRPORTS.filter(a=>a.region==="asia"),
+    "Australia":ALL_AIRPORTS.filter(a=>a.region==="aus"),
+    "New Zealand":ALL_AIRPORTS.filter(a=>a.region==="nz"),
+    "Middle East":ALL_AIRPORTS.filter(a=>a.region==="me"),
+    "India":ALL_AIRPORTS.filter(a=>a.region==="india"),
+    "Latin America":ALL_AIRPORTS.filter(a=>a.region==="latam"),
+    "Africa":ALL_AIRPORTS.filter(a=>a.region==="africa"),
+    "Other":ALL_AIRPORTS.filter(a=>a.region==="other"),
+  };
+  return Object.entries(groups).map(([groupName,airports])=>
+    airports.length===0?"":`<optgroup label="${groupName}">${airports.map(a=>`<option value="${a.k}" ${selected===a.k?"selected":""}>${a.label}${a.region!=="us"&&!["lax","lgb"].includes(a.k)?" ✈":""}${["lax","lgb"].includes(a.k)?" (no outport fee)":""}</option>`).join("")}</optgroup>`
+  ).join("");
+}
+
 function switchTab(tab){
   document.querySelectorAll(".tab").forEach((t,i)=>t.classList.toggle("active",(i===0&&tab==="email")||(i===1&&tab==="manual")));
   document.getElementById("tab-email").style.display=tab==="email"?"block":"none";
@@ -577,8 +739,8 @@ function renderEmail(){
       </div>
       ${dimSectionHTML(ex.dimPieces||[],"email-edit")}
       <div class="grid-2" style="margin-top:12px">
-        <div class="field"><label>Origin</label><select onchange="emailState.extracted.origin=this.value">${ORIGINS.map(r=>`<option value="${r.k}" ${ex.origin===r.k?"selected":""}>${r.label}</option>`).join("")}</select></div>
-        <div class="field"><label>Destination airport</label><select onchange="emailState.extracted.destAirport=this.value">${AIRPORTS.map(a=>`<option value="${a.k}" ${ex.destAirport===a.k?"selected":""}>${a.label}</option>`).join("")}</select></div>
+        <div class="field"><label>Origin airport or region</label><select onchange="emailState.extracted.origin=this.value">${buildAirportOptions(ex.origin)}</select></div>
+        <div class="field"><label>Destination airport</label><select onchange="emailState.extracted.destAirport=this.value">${buildAirportOptions(ex.destAirport)}</select></div>
       </div>
       <div class="field"><label>Delivery distance (miles from airport)</label><input type="number" value="${ex.deliveryMiles||20}" oninput="emailState.extracted.deliveryMiles=this.value"></div>
       <div class="btn-row">
@@ -641,7 +803,7 @@ async function parseEmail(){
 
 // ── Manual tab ─────────────────────────────────────────────────────────
 let manualStep=1;
-let manualForm={client:"",production:"",carnetNumber:"",origin:"europe",destAirport:"lax",pieces:"",weightKg:"",value:"",commodity:"",deliveryMiles:20,hasLiftGate:false,hasOvertime:false,hasSpecialMessenger:false,hasAirlineRecovery:false,includeCarnetIssuance:false,hasExpediteCarnet:false,vehicleType:"",direction:"import",notes:"",dimPieces:[{l:"",w:"",h:"",qty:"1"}]};
+let manualForm={client:"",production:"",carnetNumber:"",origin:"lax",destAirport:"lax",pieces:"",weightKg:"",value:"",commodity:"",deliveryMiles:20,hasLiftGate:false,hasOvertime:false,hasSpecialMessenger:false,hasAirlineRecovery:false,includeCarnetIssuance:false,hasExpediteCarnet:false,vehicleType:"",direction:"import",notes:"",dimPieces:[{l:"",w:"",h:"",qty:"1"}]};
 let manualResult=null;
 
 function renderManual(){
@@ -693,9 +855,9 @@ function renderManual(){
     initDimState("manual",f.dimPieces);
   } else {
     c.innerHTML=stepBar+`<div class="card">
-      <div class="field"><label>Origin region</label><select onchange="manualForm.origin=this.value">${ORIGINS.map(r=>`<option value="${r.k}" ${f.origin===r.k?"selected":""}>${r.label}</option>`).join("")}</select></div>
+      <div class="field"><label>Origin airport or region</label><select onchange="manualForm.origin=this.value">${buildAirportOptions(f.origin)}</select></div>
       <div class="grid-2">
-        <div class="field"><label>US destination airport</label><select onchange="manualForm.destAirport=this.value;renderManual()">${AIRPORTS.map(a=>`<option value="${a.k}" ${f.destAirport===a.k?"selected":""}>${a.label}${OUTPORTS.includes(a.k)?" (outport)":""}</option>`).join("")}</select></div>
+        <div class="field"><label>Destination airport</label><select onchange="manualForm.destAirport=this.value;renderManual()">${buildAirportOptions(f.destAirport)}</select></div>
         <div class="field"><label>Delivery distance (miles)</label><input type="number" min="0" value="${f.deliveryMiles}" oninput="manualForm.deliveryMiles=this.value"></div>
       </div>
       ${isOutport(f.destAirport)?`<div class="alert alert-info" style="margin-bottom:12px;font-size:12px">Outport detected — a $150.00 outport fee and $125.00 messenger fee will be applied.</div>`:""}
