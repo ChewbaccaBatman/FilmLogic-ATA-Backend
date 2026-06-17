@@ -129,27 +129,106 @@
 const API_BASE="https://filmlogic-ata-backend-production.up.railway.app";
 const DIM_DIV=6000;
 
-const ORIGINS=[{label:"Europe (UK/Spain/France/Germany/Italy)",k:"europe"},{label:"Canada (YVR/YYZ/YYC)",k:"canada"},{label:"Mexico (MEX/NLU)",k:"mexico"},{label:"Asia (Japan/Thailand/China/Korea)",k:"asia"},{label:"Australia/New Zealand",k:"aus_nz"},{label:"Middle East (UAE/Dubai)",k:"me"},{label:"Latin America",k:"latam"}];
-const AIRPORTS=[{label:"LAX – Los Angeles",k:"lax"},{label:"JFK – New York",k:"jfk"},{label:"EWR – Newark",k:"ewr"},{label:"SFO – San Francisco",k:"sfo"},{label:"ORD – Chicago",k:"ord"},{label:"ATL – Atlanta",k:"atl"},{label:"BOS – Boston",k:"bos"},{label:"MIA – Miami",k:"mia"},{label:"LAS – Las Vegas",k:"las"},{label:"IAD – Washington D.C.",k:"iad"}];
-const OUTPORTS=["jfk","ewr","sfo","ord","atl","bos","mia","las","iad"]; // not lax
+// ── Origin regions (comprehensive) ───────────────────────────────────
+const ORIGINS=[
+  {label:"Europe (UK/Spain/France/Germany/Italy/France)",k:"europe"},
+  {label:"Canada (YVR Vancouver / YYZ Toronto / YYC Calgary)",k:"canada"},
+  {label:"Mexico (MEX Mexico City / NLU / GDL)",k:"mexico"},
+  {label:"Japan (NRT/HND Tokyo)",k:"japan"},
+  {label:"Asia – Other (Thailand/China/Korea/Singapore/HK)",k:"asia"},
+  {label:"Australia (SYD/MEL/BNE)",k:"aus"},
+  {label:"New Zealand (AKL/CHC)",k:"nz"},
+  {label:"Middle East (UAE/Dubai/Abu Dhabi/Qatar)",k:"me"},
+  {label:"Latin America / South America",k:"latam"},
+  {label:"Africa",k:"africa"},
+  {label:"India (BOM/DEL/BLR)",k:"india"},
+  {label:"Other / Unknown",k:"other"},
+];
+
+// ── US destination airports (comprehensive) ───────────────────────────
+const AIRPORTS=[
+  // Major hubs
+  {label:"LAX – Los Angeles",k:"lax"},
+  {label:"JFK – New York (Kennedy)",k:"jfk"},
+  {label:"EWR – Newark",k:"ewr"},
+  {label:"SFO – San Francisco",k:"sfo"},
+  {label:"ORD – Chicago (O'Hare)",k:"ord"},
+  {label:"ATL – Atlanta",k:"atl"},
+  {label:"BOS – Boston",k:"bos"},
+  {label:"MIA – Miami",k:"mia"},
+  {label:"LAS – Las Vegas",k:"las"},
+  {label:"IAD – Washington D.C. (Dulles)",k:"iad"},
+  {label:"DCA – Washington D.C. (Reagan)",k:"dca"},
+  {label:"DFW – Dallas/Fort Worth",k:"dfw"},
+  {label:"DEN – Denver",k:"den"},
+  {label:"SEA – Seattle",k:"sea"},
+  {label:"PDX – Portland",k:"pdx"},
+  {label:"PHX – Phoenix",k:"phx"},
+  {label:"MSP – Minneapolis",k:"msp"},
+  {label:"DTW – Detroit",k:"dtw"},
+  {label:"PHL – Philadelphia",k:"phl"},
+  {label:"CLT – Charlotte",k:"clt"},
+  {label:"HOU/IAH – Houston",k:"iah"},
+  {label:"SAN – San Diego",k:"san"},
+  {label:"SLC – Salt Lake City",k:"slc"},
+  {label:"AUS – Austin",k:"aus_tx"},
+  {label:"BNA – Nashville",k:"bna"},
+  {label:"MCO – Orlando",k:"mco"},
+  {label:"TPA – Tampa",k:"tpa"},
+  {label:"HNL – Honolulu",k:"hnl"},
+  // Non-US entry points Film Logic handles
+  {label:"YVR – Vancouver, Canada",k:"yvr"},
+  {label:"YYZ – Toronto, Canada",k:"yyz"},
+  {label:"Other / Custom",k:"other"},
+];
+
+const OUTPORTS_LAX_ONLY=["lax","lgb"]; // LAX/LGB = no outport fee
+function isOutport(ap){return ap&&!OUTPORTS_LAX_ONLY.includes(ap)}
 
 function fmt(n){return Number(n||0).toLocaleString("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2})}
 function fmtKg(n){return Math.round(n*10)/10}
 function parseDollars(s){return parseFloat(String(s).replace(/[$,]/g,""))||0}
 function calcDimWt(pieces){return pieces.reduce((s,p)=>{const l=parseFloat(p.l)||0,w=parseFloat(p.w)||0,h=parseFloat(p.h)||0,q=parseInt(p.qty)||1;return s+(l*w*h/DIM_DIV)*q;},0)}
 function getWt(actualKg,dimPieces){const a=parseFloat(actualKg)||0,d=Math.round(calcDimWt(dimPieces||[])*10)/10;return{actual:a,dimWt:d,chargeable:Math.max(a,d),useDim:d>a}}
-function originName(k){return(ORIGINS.find(r=>r.k===k)?.label||k).split(" (")[0]}
-function airportName(k){return(AIRPORTS.find(a=>a.k===k)?.label||k).split("–")[0].trim()}
-function isOutport(ap){return OUTPORTS.includes(ap)}
+function originName(k){
+  if(!k)return "Unknown Origin";
+  const found=ORIGINS.find(r=>r.k===k);
+  if(found)return found.label.split(" (")[0];
+  return k.toUpperCase();
+}
+function airportName(k){
+  if(!k)return "Unknown Airport";
+  const found=AIRPORTS.find(a=>a.k===k);
+  if(found)return (found.label.split("–")[0]||found.label).trim();
+  return k.toUpperCase();
+}
 
 // ── CORRECTED fee engine (from official Film Logic fee schedule) ──────
 function getDelivery(ap,mi){
-  // Base rates by airport
-  const b={lax:125,jfk:250,ewr:175,sfo:195,ord:125,atl:115,bos:350,mia:195,las:295,iad:250}[ap]||150;
+  const b={
+    lax:125,lgb:125,
+    jfk:250,ewr:175,
+    sfo:195,
+    ord:125,atl:115,
+    bos:350,mia:195,las:295,
+    iad:250,dca:250,
+    dfw:150,den:150,sea:195,pdx:195,
+    phx:125,msp:150,dtw:175,phl:195,
+    clt:150,iah:175,san:125,slc:175,
+    aus_tx:175,bna:150,mco:150,tpa:150,
+    hnl:350,yvr:225,yyz:275,
+    other:200
+  }[ap]||175;
   return mi>50?Math.round(b+(mi-30)*1.8):b;
 }
 function getForeign(o,pcs,kg){
-  const b={europe:450,canada:295,mexico:925,asia:795,aus_nz:1200,me:1350,latam:1100}[o]||500;
+  const b={
+    europe:450,canada:295,mexico:925,
+    japan:1160,asia:795,
+    aus:1200,nz:1200,aus_nz:1200,
+    me:1350,latam:1100,
+    africa:1500,india:900,other:800
+  }[o]||600;
   return(pcs>10||kg>500)?Math.round(b*1.15):b;
 }
 function getCouncilFee(v){
@@ -176,7 +255,6 @@ function getIssuanceFee(v){
   return 400;
 }
 function getMessengerFee(ap){
-  // $125 at outports, $95 at LAX/LGB
   return isOutport(ap)?125:95;
 }
 
