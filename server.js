@@ -168,6 +168,55 @@ app.post("/api/parse-email", async (req, res) => {
   }
 });
 
+
+const fs = require("fs");
+const path = require("path");
+const HISTORY_FILE = path.join(__dirname, "history.json");
+
+function readHistory() {
+  try {
+    if (!fs.existsSync(HISTORY_FILE)) return [];
+    return JSON.parse(fs.readFileSync(HISTORY_FILE, "utf8"));
+  } catch { return []; }
+}
+function writeHistory(data) {
+  fs.writeFileSync(HISTORY_FILE, JSON.stringify(data, null, 2));
+}
+
+app.get("/api/history", (req, res) => {
+  res.json({ quotes: readHistory() });
+});
+
+app.post("/api/history", (req, res) => {
+  const entry = req.body;
+  const history = readHistory();
+  if (entry.id) {
+    const idx = history.findIndex(h => h.id === entry.id);
+    if (idx >= 0) {
+      history[idx] = { ...history[idx], ...entry, ts: new Date().toISOString() };
+    } else {
+      history.unshift({ ...entry, ts: new Date().toISOString() });
+    }
+  } else {
+    entry.id = Date.now() + "_" + Math.random().toString(36).slice(2);
+    entry.ts = new Date().toISOString();
+    history.unshift(entry);
+  }
+  if (history.length > 100) history.splice(100);
+  writeHistory(history);
+  res.json({ success: true, id: entry.id });
+});
+
+app.delete("/api/history/:id", (req, res) => {
+  writeHistory(readHistory().filter(h => h.id !== req.params.id));
+  res.json({ success: true });
+});
+
+app.delete("/api/history", (req, res) => {
+  writeHistory([]);
+  res.json({ success: true });
+});
+
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", service: "Film Logic ATA Carnet Agent", timestamp: new Date().toISOString() });
 });
