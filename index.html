@@ -148,7 +148,7 @@ function councilFee(v){return netflixMode?(v<10000?255:v<50000?300:v<150000?365:
 function issuanceFee(v){return v<10000?150:v<50000?200:v<150000?250:v<400000?300:v<1000000?350:400}
 function bondFee(v,t){
   const m=t==="vehicle_corp"?1.00:t==="vehicle_ind"?1.50:0.40;
-  return netflixMode?Math.max(v*m*0.0125,95):Math.max(v*m*0.015,125);
+  return netflixMode?Math.max(v*0.40*0.0125,95):Math.max(v*m*0.015,125);
 }
 function insFee(v,c){
   if(c<=0)return 0;
@@ -274,6 +274,7 @@ function getOpts(){
     {id:"opt_canaco",label:"Canaco Fees",                       price:65,  desc:"Canaco standard fees."},
     {id:"opt_canreg",label:"Canaco Registration Fees",          price:150, desc:"Canaco registration fees."},
     {id:"opt_disb",  label:"Disbursement Fees",                 price:25,  desc:"Disbursement fees."},
+    {id:"opt_airtag",label:"Air Tag Fee",                       price:55,  desc:"Air Tag tracking fee."},
   ];
   if(netflixMode){
     opts.push(
@@ -416,18 +417,18 @@ function renderStep1(){
     </div>
     <div class="card">
       <div class="form-grid">
-        <div class="fg"><label>Client name</label><input id="f-client" value="${esc(FORM.client||"")}" placeholder="Warner Bros."></div>
-        <div class="fg"><label>Production title</label><input id="f-prod" value="${esc(FORM.production||"")}" placeholder="Project title"></div>
+        <div class="fg"><label>Client</label><input id="f-client" value="${esc(FORM.client||"")}" placeholder="Warner Bros."></div>
+        <div class="fg"><label>Production Title</label><input id="f-prod" value="${esc(FORM.production||"")}" placeholder="Project title"></div>
         <div class="fg"><label>ATA Carnet #</label><input id="f-cn" value="${esc(FORM.carnetNumber||"")}" placeholder="US/LA 123456"></div>
-        <div class="fg"><label>Direction</label><select id="f-dir">
+        <div class="fg"><label>Department</label><select id="f-dir">
           <option${FORM.direction==="Export"?" selected":""}>Export</option>
           <option${FORM.direction==="Import"?" selected":""}>Import</option>
           <option${FORM.direction==="Return"?" selected":""}>Return</option>
         </select></div>
-        <div class="fg full"><label>Commodity description</label><input id="f-comm" value="${esc(FORM.commodity||"")}" placeholder="Camera equipment, lighting gear..."></div>
-        <div class="fg"><label>Number of pieces</label><input id="f-pieces" type="number" min="1" value="${FORM.pieces||""}" placeholder="24"></div>
-        <div class="fg"><label>Declared value (USD)</label><input id="f-val" type="text" inputmode="decimal" value="${FORM.value||""}" placeholder="20,000.00"></div>
-        <div class="fg full"><label>Notes / Special instructions</label><textarea id="f-notes">${esc(FORM.notes||"")}</textarea></div>
+        <div class="fg full"><label>Commodity</label><input id="f-comm" value="${esc(FORM.commodity||"")}" placeholder="Camera equipment, lighting gear..."></div>
+        <div class="fg"><label>No. of Pieces</label><input id="f-pieces" type="number" min="1" value="${FORM.pieces||""}" placeholder="24"></div>
+        <div class="fg"><label>Declared Value (USD)</label><input id="f-val" type="text" inputmode="decimal" value="${FORM.value||""}" placeholder="20,000.00"></div>
+        <div class="fg full"><label>Notes</label><textarea id="f-notes">${esc(FORM.notes||"")}</textarea></div>
       </div>
       <div style="margin-top:16px;display:flex;justify-content:flex-end">
         <button class="btn btn-gold" onclick="goStep2()">Next: Carnet details &#8594;</button>
@@ -501,17 +502,17 @@ function renderStep2(isEdit){
       <div class="card">
         <div class="slbl">Edit Job Details</div>
         <div class="form-grid" style="margin-bottom:14px">
-          <div class="fg"><label>Client name</label><input id="f-client" value="${esc(FORM.client||"")}"></div>
-          <div class="fg"><label>Production title</label><input id="f-prod" value="${esc(FORM.production||"")}"></div>
+          <div class="fg"><label>Client</label><input id="f-client" value="${esc(FORM.client||"")}"></div>
+          <div class="fg"><label>Production Title</label><input id="f-prod" value="${esc(FORM.production||"")}"></div>
           <div class="fg"><label>ATA Carnet #</label><input id="f-cn" value="${esc(FORM.carnetNumber||"")}"></div>
-          <div class="fg"><label>Direction</label><select id="f-dir">
+          <div class="fg"><label>Department</label><select id="f-dir">
             <option${FORM.direction==="Export"?" selected":""}>Export</option>
             <option${FORM.direction==="Import"?" selected":""}>Import</option>
             <option${FORM.direction==="Return"?" selected":""}>Return</option>
           </select></div>
           <div class="fg full"><label>Commodity</label><input id="f-comm" value="${esc(FORM.commodity||"")}"></div>
-          <div class="fg"><label>Pieces</label><input id="f-pieces" type="number" value="${FORM.pieces||""}"></div>
-          <div class="fg"><label>Declared value (USD)</label><input id="f-val" type="text" inputmode="decimal" value="${FORM.value||""}"></div>
+          <div class="fg"><label>No. of Pieces</label><input id="f-pieces" type="number" value="${FORM.pieces||""}"></div>
+          <div class="fg"><label>Declared Value (USD)</label><input id="f-val" type="text" inputmode="decimal" value="${FORM.value||""}"></div>
           <div class="fg full"><label>Notes</label><textarea id="f-notes">${esc(FORM.notes||"")}</textarea></div>
         </div>
         ${step2HTML(vt,c)}
@@ -547,20 +548,24 @@ function renderQuoteResult(hist){
   document.getElementById("tab-quote").innerHTML=`
     <div class="actions">
       <button class="btn btn-ghost" onclick="renderQuoteTab()">&#8592; Back</button>
-      <button class="btn btn-ghost" onclick="startEdit()">&#9998; Edit details</button>
       <button class="btn btn-gold" onclick="doExportPDF()">&#11041; Export PDF</button>
       <button class="btn btn-ghost" onclick="doCopyQuote()">&#10697; Copy quote</button>
       <button id="netflix-toggle" class="btn-netflix${netflixMode?' active':''}" onclick="toggleNetflix()">Netflix</button>
     </div>
     <div class="card">
-      <div class="info-grid">
-        <div><span class="lbl">Client</span>${esc(f.client||"—")}</div>
-        <div><span class="lbl">Production</span>${esc(f.production||"—")}</div>
-        <div><span class="lbl">Carnet #</span>${esc(f.carnetNumber||"—")}</div>
-        <div><span class="lbl">Direction</span>${esc(f.direction||"—")}</div>
-        <div><span class="lbl">Declared Value</span>$${v.toLocaleString("en-US",{minimumFractionDigits:2})} USD</div>
-        <div><span class="lbl">Commodity</span>${esc(f.commodity||"—")}</div>
-        ${f.notes?`<div style="grid-column:1/-1"><span class="lbl">Notes</span>${esc(f.notes)}</div>`:""}
+      <div class="form-grid">
+        <div class="fg"><label>Client</label><input id="iq-client" value="${esc(f.client||"")}" oninput="liveSync()"></div>
+        <div class="fg"><label>Production Title</label><input id="iq-prod" value="${esc(f.production||"")}" oninput="liveSync()"></div>
+        <div class="fg"><label>ATA Carnet #</label><input id="iq-cn" value="${esc(f.carnetNumber||"")}" oninput="liveSync()"></div>
+        <div class="fg"><label>Department</label><select id="iq-dir" onchange="liveSync()">
+          <option${f.direction==="Export"?" selected":""}>Export</option>
+          <option${f.direction==="Import"?" selected":""}>Import</option>
+          <option${f.direction==="Return"?" selected":""}>Return</option>
+        </select></div>
+        <div class="fg"><label>No. of Pieces</label><input id="iq-pieces" type="number" value="${f.pieces||""}" oninput="liveSync()"></div>
+        <div class="fg"><label>Declared Value (USD)</label><input id="iq-val" type="text" inputmode="decimal" value="${f.value||""}" oninput="clearTimeout(window._lsT);window._lsT=setTimeout(liveRecalc,400)"></div>
+        <div class="fg full"><label>Commodity</label><input id="iq-comm" value="${esc(f.commodity||"")}" oninput="liveSync()"></div>
+        <div class="fg full"><label>Notes</label><textarea id="iq-notes" oninput="liveSync()">${esc(f.notes||"")}</textarea></div>
       </div>
     </div>
     <div class="card" id="billing-con"></div>
@@ -576,8 +581,34 @@ function startEdit(){
   renderStep2(true);
 }
 
+// ── Inline info sync ─────────────────────────────────────────────────────────
+function liveSync(){
+  if(!document.getElementById("iq-client"))return;
+  const g=id=>(document.getElementById(id)||{value:""}).value;
+  FORM.client=g("iq-client");
+  FORM.production=g("iq-prod");
+  FORM.carnetNumber=g("iq-cn");
+  FORM.direction=g("iq-dir")||"Export";
+  FORM.commodity=g("iq-comm");
+  FORM.pieces=g("iq-pieces");
+  FORM.notes=g("iq-notes");
+}
+function liveRecalc(){
+  const el=document.getElementById("iq-val");if(!el)return;
+  const raw=el.value.replace(/,/g,"")||"0";
+  const newVal=parseFloat(raw)||0;
+  const oldVal=parseFloat((FORM.value||"0").toString().replace(/,/g,""))||0;
+  liveSync();FORM.value=raw;
+  if(Math.abs(newVal-oldVal)>0.001){
+    flushInputs();
+    const snap=EL.map(l=>({...l}));
+    EL=smartMerge(buildSysLines(FORM),snap);
+    renderBillingSection();
+  }
+}
+
 // ── PDF export ───────────────────────────────────────────────────────────────
-async function doExportPDF(){flushInputs();if(!fromHistory)await saveHist();exportPDF()}
+async function doExportPDF(){liveSync();flushInputs();if(!fromHistory)await saveHist();exportPDF()}
 
 function exportPDF(){
   const f=FORM,total=calcTotal();
@@ -627,7 +658,7 @@ thead th:last-child{text-align:right}
     <div class="c"><label>Client</label><span>${escP(f.client||"—")}</span></div>
     <div class="c"><label>Production</label><span>${escP(f.production||"—")}</span></div>
     <div class="c"><label>Carnet #</label><span>${escP(f.carnetNumber||"—")}</span></div>
-    <div class="c"><label>Type</label><span>${escP(f.direction||"—")}</span></div>
+    <div class="c"><label>Department</label><span>${escP(f.direction||"—")}</span></div>
     <div class="c"><label>Declared Value</label><span>$${v.toLocaleString("en-US",{minimumFractionDigits:2})} USD</span></div>
     <div class="c"><label>Commodity</label><span>${escP(f.commodity||"—")}</span></div>
     ${f.notes?`<div class="c full"><label>Notes</label><span>${escP(f.notes)}</span></div>`:""}
@@ -649,7 +680,7 @@ thead th:last-child{text-align:right}
 
 // ── Copy quote ───────────────────────────────────────────────────────────────
 async function doCopyQuote(){
-  flushInputs();if(!fromHistory)await saveHist();
+  liveSync();flushInputs();if(!fromHistory)await saveHist();
   const f=FORM,total=calcTotal();
   const hasFx=EL.some(l=>l.isFedex&&parseFloat(l.amount)>0);
   const lines=EL.map(l=>{
