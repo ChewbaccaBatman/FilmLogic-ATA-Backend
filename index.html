@@ -197,7 +197,7 @@ function flushInputs(){
 }
 
 function renderBilling(con){
-  const hasFx=EL.some(l=>l.isFedex&&parseFloat(l.amount)>0);
+  const hasFx=EL.some(l=>l.isFedex&&!(parseFloat(l.amount)>0));
   const rows=EL.map((l,i)=>{
     const amtEl=(l.isFedex||l.isTbd)
       ?`<input class="bil-amt" data-i="${i}" placeholder="TBD" value="${l.amount>0?parseFloat(l.amount).toFixed(2):""}">`
@@ -213,7 +213,7 @@ function renderBilling(con){
     <div class="bil-hdr"><span class="bil-drag"></span><span style="flex:1">Description</span><span style="width:100px;text-align:right">Amount</span><span style="width:28px"></span></div>
     ${rows}
     <div class="bil-total">
-      <span class="bil-total-lbl">${hasFx?"Estimated Total":"Estimated Total (FedEx Pending)"}</span>
+      <span class="bil-total-lbl">Estimated Total</span>
       <span class="bil-total-amt" id="grand-total">${fmt(calcTotal())}</span>
     </div>
     <div class="divider"></div>
@@ -240,10 +240,10 @@ function renderBilling(con){
       if(inp.classList.contains("bil-amt")){EL[i].amount=parseFloat(inp.value)||0}
       else{EL[i].label=inp.value}
       const gt=document.getElementById("grand-total");
-      const hasFx2=EL.some(l=>l.isFedex&&parseFloat(l.amount)>0);
+      const hasFx2=EL.some(l=>l.isFedex&&!(parseFloat(l.amount)>0));
       if(gt){gt.textContent=fmt(calcTotal())}
       const lbl=con.querySelector(".bil-total-lbl");
-      if(lbl)lbl.textContent=hasFx2?"Estimated Total":"Estimated Total (FedEx Pending)";
+      if(lbl)lbl.textContent="Estimated Total";
     });
   });
 }
@@ -612,7 +612,7 @@ async function doExportPDF(){liveSync();flushInputs();if(!fromHistory)await save
 
 function exportPDF(){
   const f=FORM,total=calcTotal();
-  const hasFx=EL.some(l=>l.isFedex&&parseFloat(l.amount)>0);
+  const hasFx=EL.some(l=>l.isFedex&&!(parseFloat(l.amount)>0));
   const rows=EL.map(l=>{
     let a;
     if(l.isFedex||l.isTbd){const n=parseFloat(l.amount)||0;a=n>0?fmt(n):`<span style="color:#999;font-style:italic">TBD – Pending Delivery Address</span>`}
@@ -666,7 +666,7 @@ thead th:last-child{text-align:right}
   <table>
     <thead><tr><th>Description</th><th style="text-align:right">Amount</th></tr></thead>
     <tbody>${rows}</tbody>
-    <tfoot><tr class="tr-total"><td>${hasFx?"Estimated Total":"Estimated Total (FedEx Pending)"}</td><td>${fmt(total)}</td></tr></tfoot>
+    <tfoot><tr class="tr-total"><td>Estimated Total</td><td>${fmt(total)}</td></tr></tfoot>
   </table>
   <div class="disc">
     <p>&#8226; In order to avoid expediting fees, the carnet must be submitted <strong>3 days in advance.</strong></p>
@@ -682,7 +682,7 @@ thead th:last-child{text-align:right}
 async function doCopyQuote(){
   liveSync();flushInputs();if(!fromHistory)await saveHist();
   const f=FORM,total=calcTotal();
-  const hasFx=EL.some(l=>l.isFedex&&parseFloat(l.amount)>0);
+  const hasFx=EL.some(l=>l.isFedex&&!(parseFloat(l.amount)>0));
   const lines=EL.map(l=>{
     if(l.isFedex){const a=parseFloat(l.amount)||0;return l.label+"    "+(a>0?fmt(a):"TBD – Pending Delivery Address")}if(l.isTbd){const a=parseFloat(l.amount)||0;return l.label+"    "+(a>0?fmt(a):"TBD")}
     return l.label+"    "+fmt(parseFloat(l.amount)||0);
@@ -697,7 +697,7 @@ Declared Value: $${v.toLocaleString("en-US",{minimumFractionDigits:2})} USD
 
 ${lines}
 
-${hasFx?"ESTIMATED TOTAL":"ESTIMATED TOTAL (FedEx Pending)"}    ${fmt(total)}
+ESTIMATED TOTAL    ${fmt(total)}
 
 ATA Carnet Cargo Disclosures:
 • Carnet must be submitted 3 days in advance to avoid expediting fees.
