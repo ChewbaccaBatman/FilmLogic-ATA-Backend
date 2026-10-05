@@ -716,35 +716,33 @@ function toast(msg){
   clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity="0",2500);
 }
 
-// ── History (shared via backend API) ─────────────────────────────────────────
-async function loadH(){
-  try{
-    const r=await fetch(API+"/api/history",{signal:AbortSignal.timeout(8000)});
-    const d=await r.json();
-    historyCache=d.quotes||[];
-    return historyCache;
-  }catch{return historyCache}
+// ── History (localStorage) ────────────────────────────────────────────────────
+const HIST_KEY="fl_ata_v3";
+
+function loadH(){
+  try{return JSON.parse(localStorage.getItem(HIST_KEY)||"[]")}catch{return[]}
 }
-async function saveHist(){
+function saveHist(){
   const total=calcTotal();
   const entry={ts:new Date().toISOString(),client:FORM.client||"",production:FORM.production||"",carnetNumber:FORM.carnetNumber||"",direction:FORM.direction||"",commodity:FORM.commodity||"",total,form:{...FORM},lines:EL.map(l=>({...l}))};
-  if(editingHistId)entry.id=editingHistId;
-  try{
-    const r=await fetch(API+"/api/history",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(entry)});
-    const d=await r.json();
-    if(d.id)editingHistId=null;
-  }catch{}
+  if(editingHistId){entry.id=editingHistId;editingHistId=null;}
+  else entry.id=Date.now()+"_"+Math.random().toString(36).slice(2);
+  const h=loadH().filter(x=>x.id!==entry.id);
+  h.unshift(entry);
+  if(h.length>100)h.splice(100);
+  localStorage.setItem(HIST_KEY,JSON.stringify(h));
+  historyCache=h;
 }
 
-async function renderHistory(){
+function renderHistory(){
   document.getElementById("tab-history").innerHTML=`
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">
       <input class="search-bar" id="hsearch" placeholder="Search by client, carnet #, or production..." oninput="filterH()" style="flex:1">
       <button class="btn btn-danger btn-sm" onclick="clearH()">Clear all</button>
     </div>
-    <div id="hlist"><div class="empty"><div class="ei">&#8987;</div><div>Loading history...</div></div></div>`;
-  const h=await loadH();
-  renderHList(h);
+    <div id="hlist"></div>`;
+  historyCache=loadH();
+  renderHList(historyCache);
 }
 
 function filterH(){
@@ -774,10 +772,10 @@ function renderHList(h){
   }).join("");
 }
 
-async function viewHistPDF(id){const h=await loadH();const e=h.find(x=>x.id===id);if(!e)return;FORM={...e.form};EL=e.lines.map(l=>({...l}));deletedSysIds=new Set();fromHistory=true;exportPDF()}
-async function editHist(id){const h=await loadH();const e=h.find(x=>x.id===id);if(!e)return;FORM={...e.form};EL=e.lines.map(l=>({...l}));deletedSysIds=new Set();editingHistId=id;fromHistory=false;showTab("quote");renderQuoteResult(false)}
-async function delHist(id){await fetch(API+"/api/history/"+id,{method:"DELETE"});historyCache=historyCache.filter(x=>x.id!==id);renderHList(historyCache)}
-async function clearH(){if(!confirm("Delete all quote history? This cannot be undone."))return;await fetch(API+"/api/history",{method:"DELETE"});historyCache=[];renderHList([])}
+function viewHistPDF(id){const e=loadH().find(x=>x.id===id);if(!e)return;FORM={...e.form};EL=e.lines.map(l=>({...l}));deletedSysIds=new Set();fromHistory=true;exportPDF()}
+function editHist(id){const e=loadH().find(x=>x.id===id);if(!e)return;FORM={...e.form};EL=e.lines.map(l=>({...l}));deletedSysIds=new Set();editingHistId=id;fromHistory=false;showTab("quote");renderQuoteResult(false)}
+function delHist(id){const h=loadH().filter(x=>x.id!==id);localStorage.setItem(HIST_KEY,JSON.stringify(h));historyCache=h;renderHList(h)}
+function clearH(){if(!confirm("Delete all quote history? This cannot be undone."))return;localStorage.removeItem(HIST_KEY);historyCache=[];renderHList([])}
 
 // ── Utils ────────────────────────────────────────────────────────────────────
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
